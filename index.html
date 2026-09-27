@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>Dra_Hoalong's Flashcard Premium</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <script>
+        tailwind.config = { 
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'app-bg': 'var(--app-bg)',
+                        'surface': 'var(--surface)',
+                        'surface-secondary': 'var(--surface-secondary)',
+                        'text-primary': 'var(--text-primary)',
+                        'text-secondary': 'var(--text-secondary)',
+                        'border-color': 'var(--border)',
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --app-bg: #f8f9fa;
+            --surface: #ffffff;
+            --surface-secondary: #f2f2f7;
+            --text-primary: #1c1c1e;
+            --text-secondary: #6e6e73;
+            --border: rgba(60, 60, 67, 0.18);
+
+            --color-study: #4f46e5;
+            --color-study-light: #e0e7ff;
+            --color-study-lighter: #f0f4ff;
+            --color-review: #10b981;
+            --color-review-light: #d1fae5;
+            --color-review-lighter: #ecfdf5;
+            --color-manage: #8b5cf6;
+            --color-manage-light: #ede9fe;
+            --color-manage-lighter: #faf5ff;
+            --color-warn: #f59e0b;
+            --color-warn-light: #fef3c7;
+            --color-warn-lighter: #fffbeb;
+        }
+
+        .dark {
+            --app-bg: #0f0f11;
+            --surface: #1c1c1e;
+            --surface-secondary: #2c2c2e;
+            --text-primary: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --border: rgba(235, 235, 245, 0.16);
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+            background-color: var(--app-bg);
+            color: var(--text-primary);
+        }
+
+        body {
+            transition: background-color 280ms cubic-bezier(0.4, 0, 0.2, 1), color 280ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .theme-transition,
+        .theme-transition *,
+        .theme-transition *::before,
+        .theme-transition *::after {
+            transition: background-color 280ms cubic-bezier(0.4, 0, 0.2, 1), border-color 280ms cubic-bezier(0.4, 0, 0.2, 1), color 280ms cubic-bezier(0.4, 0, 0.2, 1), fill 280ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .app-screen {
+            display: none;
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        .app-screen.active {
+            display: block;
+            animation: pageEnter 380ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes pageEnter {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flip-container { perspective: 1200px; }
+        .flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 600ms cubic-bezier(.22, .61, .36, 1);
+            transform-style: preserve-3d;
+        }
+        .is-flipped .flip-inner { transform: rotateY(180deg); }
+        .flip-front, .flip-back {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .flip-back { transform: rotateY(180deg); }
+
+        .surface {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .surface-secondary {
+            background-color: var(--surface-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        input, select, textarea {
+            -webkit-appearance: none;
+            appearance: none;
+            font-family: inherit;
+        }
+
+        .char-input {
+            width: 44px;
+            height: 52px;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            text-transform: lowercase;
+            letter-spacing: 1px;
+        }
+
+        .ios-checkbox {
+            accent-color: var(--color-study);
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .ios-checkbox:hover {
+            transform: scale(1.1);
+        }
+
+        .ios-checkbox:checked {
+            animation: checkPulse 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes checkPulse {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        .deck-select-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            background-color: var(--surface);
+            border: 2px solid transparent;
+        }
+
+        .deck-select-row:hover {
+            background-color: var(--surface-secondary);
+            border-color: var(--border);
+        }
+
+        .deck-select-row.deck-select-all {
+            background-color: var(--color-study-lighter);
+            border-color: var(--color-study-light);
+            border: 2px solid var(--color-study-light);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .deck-checkmark {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .deck-select-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .deck-select-content strong {
+            display: block;
+            font-size: 15px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .deck-select-content small {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .deck-count {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            flex-shrink: 0;
+            background-color: var(--surface-secondary);
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        .deck-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 150ms ease;
+        }
+
+        .deck-header:hover {
+            background-color: var(--surface-secondary);
+        }
+
+        .deck-title-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .deck-icon {
+            font-size: 20px;
+            color: var(--color-manage);
+            flex-shrink: 0;
+            animation: iconFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+
+        .deck-title-area > div {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .deck-title-area h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .deck-title-area p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .deck-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .deck-actions button {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--surface-secondary);
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .deck-actions button:hover {
+            background-color: var(--border);
+            transform: scale(1.1);
+        }
+
+        .deck-actions button:active {
+            transform: scale(0.95);
+        }
+
+        .deck-actions button.deck-toggle {
+            color: var(--text-secondary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        thead {
+            background-color: var(--surface-secondary);
+        }
+
+        th {
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border);
+            word-break: break-word;
+        }
+
+        td:nth-child(3) {
+            max-width: 200px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            animation: badgeSlide 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes badgeSlide {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .status-learned {
+            background-color: var(--color-review-light);
+            color: var(--color-review);
+        }
+
+        .status-unlearned {
+            background-color: var(--surface-secondary);
+            color: var(--text-secondary);
+        }
+
+        .action-icon {
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+        }
+
+        .action-icon:hover {
+            color: var(--text-primary);
+            background-color: var(--surface-secondary);
+            transform: scale(1.15);
+        }
+
+        .action-icon.danger:hover {
+            color: #ef4444;
+        }
+
+        .action-icon:active {
+            transform: scale(0.9);
+        }
+
+        .modal-overlay {
+            animation: fadeIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            animation: slideUp 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-bar {
+            transition: width 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 200ms ease;
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-study) 0%, #4338ca 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 12px 28px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--color-study);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--color-review) 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 12px 28px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-warn {
+            background: linear-gradient(135deg, var(--color-warn) 0%, #d97706 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-warn:hover {
+            box-shadow: 0 12px 28px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 12px 28px rgba(239, 68, 68, 0.4);
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        .table-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+            transition: background 200ms ease;
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details[open] .deck-toggle {
+            transform: rotate(180deg);
+            transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .card-gradient {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(67, 56, 202, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(79, 70, 229, 0.1);
+        }
+
+        .card-gradient.review {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+
+        .card-gradient.manage {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(124, 58, 202, 0.05) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--surface) 0%, var(--surface-secondary) 100%);
+            border: 1px solid var(--border);
+            transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 300ms ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+            border-color: var(--color-study-light);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .app-title {
+            animation: titleFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, var(--app-bg) 0%, var(--surface-secondary) 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stagger-in {
+            animation: staggerChildren 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes staggerChildren {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+    </style>
+</head>
+
+<body class="theme-transition">
+
+    <!-- HEADER -->
+    <header class="header-gradient sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+            <button onclick="goHome()" class="p-2 rounded-lg transition-all duration-300 hover:scale-110 active:scale-95" style="background-color: var(--surface-secondary);" aria-label="Trang chủ">
+                <i class="fa-solid fa-house text-lg" style="color: var(--color-study);"></i>
+            </button>
+
+            <button onclick="toggleTheme()" class="p-2 rounded-lg transition-all duration-300 hover:scale-110 active:scale-95" style="background-color: var(--surface-secondary);" aria-label="Chuyển chế độ tối/sáng">
+                <i id="theme-icon" class="fa-solid fa-moon text-lg transition-all duration-300"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-6 pb-20">
+
+        <!-- HOME SCREEN -->
+        <section id="screen-home" class="app-screen active">
+            <!-- App Title -->
+            <div class="text-center mb-16 pt-8">
+                <div class="app-title mb-4">
+                    <h1 style="font-size: 42px; font-weight: 800; letter-spacing: -1.2px; color: var(--text-primary); background: linear-gradient(135deg, var(--color-study) 0%, var(--color-manage) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                        Dra_Hoalong's
+                    </h1>
+                </div>
+                <div class="app-title">
+                    <p style="font-size: 28px; font-weight: 700; color: var(--color-review); margin-top: 8px;">
+                        Flashcard Premium
+                    </p>
+                </div>
+                <p style="font-size: 14px; color: var(--text-secondary); margin-top: 12px; font-weight: 500;">
+                    Học thêm từ vựng mỗi ngày • Tiến bộ từng bước
+                </p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8 stagger-in">
+                <div class="stat-card rounded-2xl p-6 delay-1">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Tổng từ vựng</p>
+                            <p style="font-size: 36px; font-weight: 800; color: var(--text-primary);" id="home-total">0</p>
+                        </div>
+                        <div style="width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, var(--color-study-light) 0%, var(--color-study-lighter) 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-book text-2xl" style="color: var(--color-study);"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card rounded-2xl p-6 delay-2">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Tiến độ học</p>
+                            <p style="font-size: 36px; font-weight: 800; color: var(--color-review);" id="home-progress">0%</p>
+                        </div>
+                        <div style="width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, var(--color-review-light) 0%, var(--color-review-lighter) 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-chart-line text-2xl" style="color: var(--color-review);"></i>
+                        </div>
+                    </div>
+                    <div class="h-2 surface-secondary rounded-full overflow-hidden">
+                        <div id="home-progress-bar" class="h-full progress-bar" style="background: linear-gradient(90deg, var(--color-review) 0%, #059669 100%); width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="stat-card rounded-2xl p-6 delay-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Đã học</p>
+                            <p style="font-size: 32px; font-weight: 800; color: var(--color-review);" id="home-learned">0</p>
+                        </div>
+                        <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--color-review-light) 0%, var(--color-review-lighter) 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-check-circle text-xl" style="color: var(--color-review);"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card rounded-2xl p-6 delay-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Chưa học</p>
+                            <p style="font-size: 32px; font-weight: 800; color: var(--color-warn);" id="home-unlearned">0</p>
+                        </div>
+                        <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--color-warn-light) 0%, var(--color-warn-lighter) 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-book-open text-xl" style="color: var(--color-warn);"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Actions -->
+            <div class="space-y-4 pt-4">
+                <button onclick="navigate('study-intro')" class="w-full card-gradient rounded-2xl p-5 flex items-center justify-between hover:shadow-lg transition-all duration-300" style="border: 2px solid var(--color-study-light);">
+                    <span class="flex items-center gap-4">
+                        <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, var(--color-study-light) 0%, var(--color-study-lighter) 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-book text-xl" style="color: var(--color-study);"></i>
+                        </div>
+                        <div style="text-align: left;">
+                            <p style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Học Flashcard</p>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Học các từ chưa học</p>
+                        </div>
+                    </span>
+                    <i class="fa-solid fa-arrow-right" style="color: var(--color-study); font-size: 16px;"></i>
+                </button>
+
+                <button onclick="navigate('review-intro')" class="w-full card-gradient review rounded-2xl p-5 flex items-center justify-between hover:shadow-lg transition-all duration-300" style="border: 2px solid var(--color-review-light);">
+                    <span class="flex items-center gap-4">
+                        <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, var(--color-review-light) 0%, var(--color-review-lighter) 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-rotate-left text-xl" style="color: var(--color-review);"></i>
+                        </div>
+                        <div style="text-align: left;">
+                            <p style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Ôn tập Flashcard</p>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Ôn lại từ đã học</p>
+                        </div>
+                    </span>
+                    <i class="fa-solid fa-arrow-right" style="color: var(--color-review); font-size: 16px;"></i>
+                </button>
+
+                <button onclick="navigate('manage')" class="w-full card-gradient manage rounded-2xl p-5 flex items-center justify-between hover:shadow-lg transition-all duration-300" style="border: 2px solid var(--color-manage-light);">
+                    <span class="flex items-center gap-4">
+                        <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, var(--color-manage-light) 0%, var(--color-manage-lighter) 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-folder text-xl" style="color: var(--color-manage);"></i>
+                        </div>
+                        <div style="text-align: left;">
+                            <p style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Quản lý Bộ thẻ</p>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Nhập & chỉnh sửa dữ liệu</p>
+                        </div>
+                    </span>
+                    <i class="fa-solid fa-arrow-right" style="color: var(--color-manage); font-size: 16px;"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- STUDY INTRO -->
+        <section id="screen-study-intro" class="app-screen space-y-4">
+            <button onclick="navigate('home')" class="flex items-center gap-2" style="color: var(--color-study); font-weight: 600; font-size: 15px; transition: all 200ms ease;">
+                <i class="fa-solid fa-chevron-left"></i>Quay lại
+            </button>
+
+            <h2 style="font-size: 32px; font-weight: 800; color: var(--text-primary); margin-top: 8px;">Học Flashcard</h2>
+
+            <div class="surface rounded-2xl p-6 space-y-4 mt-6">
+                <p style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Chọn bộ thẻ để học</p>
+
+                <div id="study-decks-list" class="space-y-2"></div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="selectAllStudyDecks()" class="btn btn-secondary">
+                        <i class="fa-solid fa-check-double"></i>Chọn tất cả
+                    </button>
+                    <button onclick="startStudy()" class="btn btn-primary">
+                        <i class="fa-solid fa-play"></i>Bắt đầu
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STUDY RUN -->
+        <section id="screen-study-run" class="app-screen space-y-4">
+            <div class="flex items-center justify-between">
+                <button onclick="endStudy()" class="flex items-center gap-2" style="color: var(--text-secondary); font-weight: 600; font-size: 15px; transition: all 200ms ease;">
+                    <i class="fa-solid fa-xmark"></i>Kết thúc
+                </button>
+                <span id="study-counter" style="font-size: 13px; font-weight: 700; background: linear-gradient(135deg, var(--color-study-light) 0%, var(--color-study-lighter) 100%); color: var(--color-study); padding: 6px 12px; border-radius: 8px;"></span>
+            </div>
+
+            <div class="h-1.5 surface-secondary rounded-full overflow-hidden">
+                <div id="study-progress-bar" class="h-full progress-bar" style="background: linear-gradient(90deg, var(--color-study) 0%, #4338ca 100%);"></div>
+            </div>
+
+            <div id="study-card" onclick="toggleCard('study-card')" class="flip-container w-full rounded-3xl overflow-hidden cursor-pointer" style="height: 420px;">
+                <div class="flip-inner w-full h-full">
+                    <div class="flip-front w-full h-full surface flex flex-col items-center justify-center p-6 gap-6" style="box-shadow: 0 20px 48px rgba(0, 0, 0, 0.08);">
+                        <span id="study-deck-label" style="font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 10px; background: linear-gradient(135deg, var(--color-study-light) 0%, var(--color-study-lighter) 100%); color: var(--color-study); text-transform: uppercase; letter-spacing: 0.5px;"></span>
+                        <h2 id="study-word" style="font-size: 52px; font-weight: 800; text-align: center; color: var(--text-primary); word-break: break-words; line-height: 1.2;"></h2>
+                        <p id="study-type" style="font-size: 15px; color: var(--text-secondary); font-weight: 500;"></p>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-top: auto; font-weight: 500;">Chạm để xem dịch nghĩa</p>
+                    </div>
+
+                    <div class="flip-back w-full h-full flex flex-col items-center justify-center p-6 gap-6" style="background: linear-gradient(135deg, var(--color-study) 0%, #4338ca 100%); color: white; box-shadow: 0 20px 48px rgba(79, 70, 229, 0.2);">
+                        <p style="font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Dịch Nghĩa</p>
+                        <h2 id="study-meaning" style="font-size: 44px; font-weight: 800; text-align: center; word-break: break-words; line-height: 1.2;"></h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="studySkip()" class="btn btn-warn">
+                    <i class="fa-solid fa-forward"></i>Bỏ qua
+                </button>
+                <button onclick="studyNext()" class="btn btn-primary">
+                    <i class="fa-solid fa-arrow-right"></i>Tiếp theo
+                </button>
+            </div>
+        </section>
+
+        <!-- REVIEW INTRO -->
+        <section id="screen-review-intro" class="app-screen space-y-4">
+            <button onclick="navigate('home')" class="flex items-center gap-2" style="color: var(--color-review); font-weight: 600; font-size: 15px; transition: all 200ms ease;">
+                <i class="fa-solid fa-chevron-left"></i>Quay lại
+            </button>
+
+            <h2 style="font-size: 32px; font-weight: 800; color: var(--text-primary); margin-top: 8px;">Ôn tập Flashcard</h2>
+
+            <div class="space-y-3 pt-4">
+                <button onclick="setReviewMode('flashcard'); navigate('review-config');" class="w-full card-gradient review rounded-2xl p-5 flex items-center justify-between hover:shadow-lg transition-all duration-300" style="border: 2px solid var(--color-review-light);">
+                    <span class="flex items-center gap-4">
+                        <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, var(--color-review-light) 0%, var(--color-review-lighter) 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-card-diamond text-xl" style="color: var(--color-review);"></i>
+                        </div>
+                        <div style="text-align: left;">
+                            <p style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Ôn tập Flashcard</p>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Lật thẻ để xem nghĩa</p>
+                        </div>
+                    </span>
+                    <i class="fa-solid fa-arrow-right" style="color: var(--color-review); font-size: 16px;"></i>
+                </button>
+
+                <button onclick="setReviewMode('quiz'); navigate('review-config');" class="w-full card-gradient rounded-2xl p-5 flex items-center justify-between hover:shadow-lg transition-all duration-300" style="border: 2px solid var(--color-warn-light);">
+                    <span class="flex items-center gap-4">
+                        <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, var(--color-warn-light) 0%, var(--color-warn-lighter) 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-brain text-xl" style="color: var(--color-warn);"></i>
+                        </div>
+                        <div style="text-align: left;">
+                            <p style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Trắc nghiệm</p>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Chọn đáp án đúng</p>
+                        </div>
+                    </span>
+                    <i class="fa-solid fa-arrow-right" style="color: var(--color-warn); font-size: 16px;"></i>
+                </button>
+
+                <button onclick="setReviewMode('typing'); navigate('review-config');" class="w-full card-gradient manage rounded-2xl p-5 flex items-center justify-between hover:shadow-lg transition-all duration-300" style="border: 2px solid var(--color-manage-light);">
+                    <span class="flex items-center gap-4">
+                        <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, var(--color-manage-light) 0%, var(--color-manage-lighter) 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-keyboard text-xl" style="color: var(--color-manage);"></i>
+                        </div>
+                        <div style="text-align: left;">
+                            <p style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Tự luận</p>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Gõ từ tiếng Anh</p>
+                        </div>
+                    </span>
+                    <i class="fa-solid fa-arrow-right" style="color: var(--color-manage); font-size: 16px;"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- REVIEW CONFIG -->
+        <section id="screen-review-config" class="app-screen space-y-4">
+            <button onclick="navigate('review-intro')" class="flex items-center gap-2" style="color: var(--color-review); font-weight: 600; font-size: 15px; transition: all 200ms ease;">
+                <i class="fa-solid fa-chevron-left"></i>Quay lại
+            </button>
+
+            <h2 style="font-size: 32px; font-weight: 800; color: var(--text-primary); margin-top: 8px;" id="review-mode-title">Ôn tập</h2>
+
+            <div class="surface rounded-2xl p-6 space-y-4 mt-6">
+                <p style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Chọn bộ thẻ để ôn</p>
+
+                <div id="review-decks-list" class="space-y-2"></div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="selectAllReviewDecks()" class="btn btn-secondary">
+                        <i class="fa-solid fa-check-double"></i>Chọn tất cả
+                    </button>
+                    <button onclick="startReview()" class="btn btn-success">
+                        <i class="fa-solid fa-play"></i>Bắt đầu
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- REVIEW RUN -->
+        <section id="screen-review-run" class="app-screen space-y-4">
+            <div class="flex items-center justify-between">
+                <button onclick="endReview()" class="flex items-center gap-2" style="color: var(--text-secondary); font-weight: 600; font-size: 15px; transition: all 200ms ease;">
+                    <i class="fa-solid fa-xmark"></i>Kết thúc
+                </button>
+                <span id="review-counter" style="font-size: 13px; font-weight: 700; background: linear-gradient(135deg, var(--color-review-light) 0%, var(--color-review-lighter) 100%); color: var(--color-review); padding: 6px 12px; border-radius: 8px;"></span>
+            </div>
+
+            <div class="h-1.5 surface-secondary rounded-full overflow-hidden">
+                <div id="review-progress-bar" class="h-full progress-bar" style="background: linear-gradient(90deg, var(--color-review) 0%, #059669 100%);"></div>
+            </div>
+
+            <div id="review-container" class="min-h-96"></div>
+        </section>
+
+        <!-- MANAGE -->
+        <section id="screen-manage" class="app-screen space-y-4">
+            <button onclick="navigate('home')" class="flex items-center gap-2" style="color: var(--color-manage); font-weight: 600; font-size: 15px; transition: all 200ms ease;">
+                <i class="fa-solid fa-chevron-left"></i>Quay lại
+            </button>
+
+            <h2 style="font-size: 32px; font-weight: 800; color: var(--text-primary); margin-top: 8px;">Quản lý Bộ thẻ</h2>
+
+            <!-- File Actions -->
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button onclick="downloadExcelTemplate()" class="btn btn-secondary">
+                    <i class="fa-solid fa-download"></i>File mẫu
+                </button>
+                <label class="btn btn-success cursor-pointer">
+                    <i class="fa-solid fa-file-excel"></i>Nhập Excel
+                    <input id="excel-input" type="file" accept=".xlsx,.xls" class="hidden" onchange="handleExcelImport(event)">
+                </label>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="backupData()" class="btn btn-primary">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>Sao lưu
+                </button>
+                <label class="btn btn-secondary cursor-pointer">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>Khôi phục
+                    <input type="file" accept=".json" class="hidden" onchange="restoreData(event)">
+                </label>
+            </div>
+
+            <!-- Search & Filter -->
+            <div class="surface rounded-2xl p-6 space-y-4 mt-6">
+                <input id="search-input" oninput="renderManage()" placeholder="Tìm từ, bộ thẻ..." class="w-full p-3 surface-secondary rounded-lg border-none" style="font-size: 15px;">
+
+                <div class="grid grid-cols-3 gap-2">
+                    <select id="deck-filter" onchange="renderManage()" class="p-3 surface-secondary rounded-lg border-none" style="font-size: 14px;">
+                        <option value="">Tất cả bộ</option>
+                    </select>
+
+                    <select id="status-filter" onchange="renderManage()" class="p-3 surface-secondary rounded-lg border-none" style="font-size: 14px;">
+                        <option value="">Tất cả</option>
+                        <option value="learned">Đã học</option>
+                        <option value="unlearned">Chưa học</option>
+                    </select>
+
+                    <select id="sort-select" onchange="renderManage()" class="p-3 surface-secondary rounded-lg border-none" style="font-size: 14px;">
+                        <option value="deck">Theo bộ</option>
+                        <option value="word">A-Z</option>
+                        <option value="reviewAsc">Ôn ít</option>
+                        <option value="reviewDesc">Ôn nhiều</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Deck List -->
+            <div id="deck-list" class="space-y-3"></div>
+        </section>
+
+        <!-- EDIT MODAL -->
+        <div id="edit-modal" class="hidden fixed inset-0 z-50 bg-black/40 modal-overlay flex items-end sm:items-center justify-center p-4">
+            <div class="surface rounded-3xl w-full sm:max-w-md max-h-[90vh] overflow-y-auto modal-content">
+                <div class="sticky top-0 surface border-b p-4">
+                    <div class="flex justify-between items-center">
+                        <h3 style="font-size: 18px; font-weight: 700;">Chỉnh sửa từ</h3>
+                        <button onclick="closeEditModal()" style="color: var(--text-secondary); transition: all 200ms ease;" class="hover:scale-110 active:scale-90">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label style="font-size: 13px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 8px;">Chủ đề</label>
+                        <input id="edit-chude" class="w-full p-3 surface-secondary rounded-lg border-2" style="font-size: 15px; border-color: var(--border); transition: all 200ms ease;" onpaste="return true">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 13px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 8px;">Từ vựng</label>
+                        <input id="edit-tuvung" class="w-full p-3 surface-secondary rounded-lg border-2" style="font-size: 15px; border-color: var(--border); transition: all 200ms ease;">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 13px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 8px;">Từ loại</label>
+                        <input id="edit-loaitu" class="w-full p-3 surface-secondary rounded-lg border-2" style="font-size: 15px; border-color: var(--border); transition: all 200ms ease;">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 13px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 8px;">Dịch nghĩa</label>
+                        <input id="edit-dichnghia" class="w-full p-3 surface-secondary rounded-lg border-2" style="font-size: 15px; border-color: var(--border); transition: all 200ms ease;">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 pt-4">
+                        <button onclick="closeEditModal()" class="btn btn-secondary">Hủy</button>
+                        <button onclick="saveEditedWord()" class="btn btn-primary">Lưu</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DELETE DECK MODAL -->
+        <div id="delete-deck-modal" class="hidden fixed inset-0 z-50 bg-black/40 modal-overlay flex items-center justify-center p-4">
+            <div class="surface rounded-3xl w-full max-w-sm modal-content">
+                <div class="p-6 space-y-4">
+                    <h3 style="font-size: 18px; font-weight: 700;">Xoá bộ thẻ</h3>
+                    <p id="delete-deck-name" style="font-size: 15px; color: var(--text-primary);"></p>
+                    <p style="font-size: 13px; color: var(--text-secondary);">Hành động này không thể hoàn tác.</p>
+
+                    <div class="grid grid-cols-2 gap-3 pt-4">
+                        <button onclick="closeDeleteDeckModal()" class="btn btn-secondary">Hủy</button>
+                        <button onclick="confirmDeleteDeck()" class="btn btn-danger">Xoá</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IMPORT MODAL -->
+        <div id="import-modal" class="hidden fixed inset-0 z-50 bg-black/40 modal-overlay flex items-end sm:items-center justify-center p-4">
+            <div class="surface rounded-3xl w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto modal-content">
+                <div class="sticky top-0 surface border-b p-4">
+                    <div class="flex justify-between items-center">
+                        <h3 style="font-size: 18px; font-weight: 700;">Xem trước dữ liệu</h3>
+                        <button onclick="closeImportModal()" style="color: var(--text-secondary); transition: all 200ms ease;" class="hover:scale-110 active:scale-90">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <div id="import-summary" style="font-size: 14px; padding: 14px; background: linear-gradient(135deg, var(--color-study-light) 0%, var(--color-study-lighter) 100%); color: var(--color-study); border-radius: 12px; font-weight: 600;"></div>
+
+                    <div>
+                        <label style="font-size: 13px; font-weight: 700; display: block; margin-bottom: 8px;">Xử lý từ trùng</label>
+                        <select id="duplicate-policy" class="w-full p-3 surface-secondary rounded-lg border-none" style="font-size: 15px;">
+                            <option value="skip">Giữ dữ liệu cũ</option>
+                            <option value="replace">Thay bằng mới</option>
+                        </select>
+                    </div>
+
+                    <div id="import-errors" class="hidden" style="font-size: 14px; padding: 14px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%); color: #991b1b; border-radius: 12px; font-weight: 500;"></div>
+
+                    <div class="table-scroll rounded-lg border" style="border-color: var(--border); max-height: 240px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Dòng</th>
+                                    <th>Chủ đề</th>
+                                    <th>Từ</th>
+                                    <th>Loại</th>
+                                    <th>Nghĩa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="import-preview-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="closeImportModal()" class="btn btn-secondary">Hủy</button>
+                        <button onclick="confirmImport()" class="btn btn-success">Xác nhận</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const STORAGE_KEY = 'FLASHCARD_PRO_V11';
+
+        let words = [];
+        let importRows = [];
+        let importErrors = [];
+
+        let studyList = [];
+        let studyIndex = 0;
+        let selectedStudyDecks = [];
+
+        let reviewList = [];
+        let reviewIndex = 0;
+        let selectedReviewDecks = [];
+
+        let reviewMode = 'flashcard';
+        let reviewLocked = false;
+
+        let editingWordId = null;
+        let deletingDeckName = null;
+
+        function uid() {
+            return 'w_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function normalize(value) {
+            return String(value ?? '')
+                .trim()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+        }
+
+        function getWordKey(word) {
+            return [
+                normalize(word.chude),
+                normalize(word.tuvung),
+                normalize(word.loaitu)
+            ].join('|');
+        }
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) {
+                    for (let v = 10; v >= 7; v--) {
+                        const oldKey = `FLASHCARD_PRO_V${v}`;
+                        const oldData = localStorage.getItem(oldKey);
+                        if (oldData) {
+                            words = JSON.parse(oldData);
+                            break;
+                        }
+                    }
+                } else {
+                    words = JSON.parse(raw);
+                }
+
+                words = words.map(word => ({
+                    id: word.id || uid(),
+                    chude: String(word.chude || 'Khác').trim(),
+                    tuvung: String(word.tuvung || '').trim(),
+                    loaitu: String(word.loaitu ?? word.tuloai ?? '').trim(),
+                    dichnghia: String(word.dichnghia || '').trim(),
+                    learned: Boolean(word.learned),
+                    reviewCount: Number.isFinite(Number(word.reviewCount)) ? Number(word.reviewCount) : Number(word.review_count || 0)
+                })).filter(word => word.tuvung && word.dichnghia);
+
+                saveData();
+            } catch (error) {
+                words = [];
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+        }
+
+        function getDecks() {
+            return [...new Set(words.map(word => word.chude || 'Khác'))].sort((a, b) => a.localeCompare(b, 'vi'));
+        }
+
+        function navigate(screen) {
+            document.querySelectorAll('.app-screen').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            const target = document.getElementById('screen-' + screen);
+            if (target) target.classList.add('active');
+
+            if (screen === 'home') renderHome();
+            if (screen === 'study-intro') renderStudyConfig();
+            if (screen === 'review-config') renderReviewConfig();
+            if (screen === 'manage') renderManage();
+
+            window.scrollTo({ top: 0 });
+        }
+
+        function goHome() { navigate('home'); }
+
+        function setReviewMode(mode) {
+            reviewMode = mode;
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('FLASHCARD_THEME', isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        function loadTheme() {
+            const saved = localStorage.getItem('FLASHCARD_THEME');
+            const isDark = saved === 'dark';
+            document.documentElement.classList.toggle('dark', isDark);
+            document.getElementById('theme-icon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        function renderHome() {
+            const total = words.length;
+            const learned = words.filter(word => word.learned).length;
+            const unlearned = total - learned;
+            const progress = total ? Math.round((learned / total) * 100) : 0;
+
+            document.getElementById('home-total').textContent = total;
+            document.getElementById('home-learned').textContent = learned;
+            document.getElementById('home-unlearned').textContent = unlearned;
+            document.getElementById('home-progress').textContent = progress + '%';
+            document.getElementById('home-progress-bar').style.width = progress + '%';
+        }
+
+        function renderStudyConfig() {
+            const decks = getDecks();
+            const container = document.getElementById('study-decks-list');
+
+            let html = `
+                <label class="deck-select-row deck-select-all">
+                    <input type="checkbox" id="study-all-decks" class="ios-checkbox" onchange="toggleAllStudyDecks()">
+                    <span class="deck-select-content">
+                        <strong>Tất cả bộ thẻ</strong>
+                        <small>Toàn bộ kho từ vựng (${words.length} từ)</small>
+                    </span>
+                </label>
+            `;
+
+            html += decks.map(deck => {
+                const count = words.filter(w => w.chude === deck).length;
+                return `
+                    <label class="deck-select-row">
+                        <input type="checkbox" value="${escapeHTML(deck)}" class="study-deck-checkbox ios-checkbox" onchange="updateStudySelection()">
+                        <span class="deck-select-content">
+                            <strong>${escapeHTML(deck)}</strong>
+                            <small>${count} từ</small>
+                        </span>
+                        <span class="deck-count">${count}</span>
+                    </label>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function toggleAllStudyDecks() {
+            const allCheck = document.getElementById('study-all-decks').checked;
+            document.querySelectorAll('.study-deck-checkbox').forEach(cb => {
+                cb.checked = allCheck;
+            });
+            updateStudySelection();
+        }
+
+        function updateStudySelection() {
+            selectedStudyDecks = [...document.querySelectorAll('.study-deck-checkbox:checked')].map(cb => cb.value);
+            const allCheck = document.getElementById('study-all-decks');
+            if (allCheck) {
+                allCheck.checked = document.querySelectorAll('.study-deck-checkbox').length === selectedStudyDecks.length;
+            }
+        }
+
+        function selectAllStudyDecks() {
+            document.getElementById('study-all-decks').checked = true;
+            toggleAllStudyDecks();
+        }
+
+        function startStudy() {
+            if (!selectedStudyDecks.length) {
+                alert('Vui lòng chọn ít nhất một bộ thẻ.');
+                return;
+            }
+
+            studyList = words.filter(word => selectedStudyDecks.includes(word.chude) && !word.learned);
+
+            if (!studyList.length) {
+                alert('Không có từ chưa học trong bộ thẻ đã chọn.');
+                return;
+            }
+
+            studyIndex = 0;
+            navigate('study-run');
+            renderStudyCard();
+        }
+
+        function renderStudyCard() {
+            const word = studyList[studyIndex];
+            const card = document.getElementById('study-card');
+            card.classList.remove('is-flipped');
+
+            document.getElementById('study-counter').textContent = `${studyIndex + 1}/${studyList.length}`;
+            document.getElementById('study-progress-bar').style.width = `${((studyIndex + 1) / studyList.length) * 100}%`;
+
+            document.getElementById('study-deck-label').textContent = word.chude;
+            document.getElementById('study-word').textContent = word.tuvung;
+            document.getElementById('study-type').textContent = word.loaitu ? `(${word.loaitu})` : '';
+            document.getElementById('study-meaning').textContent = word.dichnghia;
+        }
+
+        function toggleCard(id) {
+            document.getElementById(id).classList.toggle('is-flipped');
+        }
+
+        function studyNext() {
+            const current = studyList[studyIndex];
+            const original = words.find(word => word.id === current.id);
+
+            if (original) {
+                original.learned = true;
+                saveData();
+                renderHome();
+            }
+
+            moveToNextStudyCard();
+        }
+
+        function studySkip() {
+            moveToNextStudyCard();
+        }
+
+        function moveToNextStudyCard() {
+            studyIndex++;
+            if (studyIndex >= studyList.length) {
+                alert('🎉 Hoàn thành phiên học!');
+                navigate('home');
+                return;
+            }
+            renderStudyCard();
+        }
+
+        function endStudy() {
+            if (confirm('Kết thúc phiên học?')) {
+                navigate('home');
+            }
+        }
+
+        function renderReviewConfig() {
+            const titles = {
+                flashcard: 'Ôn tập Flashcard',
+                quiz: 'Trắc nghiệm',
+                typing: 'Tự luận'
+            };
+            document.getElementById('review-mode-title').textContent = titles[reviewMode];
+
+            const decks = getDecks();
+            const container = document.getElementById('review-decks-list');
+
+            let html = `
+                <label class="deck-select-row deck-select-all">
+                    <input type="checkbox" id="review-all-decks" class="ios-checkbox" onchange="toggleAllReviewDecks()">
+                    <span class="deck-select-content">
+                        <strong>Tất cả bộ thẻ</strong>
+                        <small>Toàn bộ kho từ đã học</small>
+                    </span>
+                </label>
+            `;
+
+            html += decks.map(deck => {
+                const learnedCount = words.filter(w => w.chude === deck && w.learned).length;
+                return `
+                    <label class="deck-select-row" style="opacity: ${learnedCount === 0 ? 0.5 : 1};">
+                        <input type="checkbox" value="${escapeHTML(deck)}" class="review-deck-checkbox ios-checkbox" onchange="updateReviewSelection()" ${learnedCount === 0 ? 'disabled' : ''}>
+                        <span class="deck-select-content">
+                            <strong>${escapeHTML(deck)}</strong>
+                            <small>${learnedCount} từ đã học</small>
+                        </span>
+                        <span class="deck-count">${learnedCount}</span>
+                    </label>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function toggleAllReviewDecks() {
+            const allCheck = document.getElementById('review-all-decks').checked;
+            document.querySelectorAll('.review-deck-checkbox:not(:disabled)').forEach(cb => {
+                cb.checked = allCheck;
+            });
+            updateReviewSelection();
+        }
+
+        function updateReviewSelection() {
+            selectedReviewDecks = [...document.querySelectorAll('.review-deck-checkbox:checked')].map(cb => cb.value);
+            const allCheck = document.getElementById('review-all-decks');
+            if (allCheck) {
+                const total = document.querySelectorAll('.review-deck-checkbox:not(:disabled)').length;
+                allCheck.checked = total > 0 && total === selectedReviewDecks.length;
+            }
+        }
+
+        function selectAllReviewDecks() {
+            document.getElementById('review-all-decks').checked = true;
+            toggleAllReviewDecks();
+        }
+
+        function startReview() {
+            if (!selectedReviewDecks.length) {
+                alert('Vui lòng chọn ít nhất một bộ thẻ.');
+                return;
+            }
+
+            reviewList = words
+                .filter(word => selectedReviewDecks.includes(word.chude) && word.learned)
+                .sort((a, b) => {
+                    const diff = a.reviewCount - b.reviewCount;
+                    return diff || Math.random() - 0.5;
+                });
+
+            if (!reviewList.length) {
+                alert('Không có từ để ôn tập.');
+                return;
+            }
+
+            reviewIndex = 0;
+            reviewLocked = false;
+
+            navigate('review-run');
+            renderReview();
+        }
+
+        function renderReview() {
+            if (reviewIndex >= reviewList.length) {
+                alert('🎉 Hoàn thành phiên ôn tập!');
+                navigate('home');
+                return;
+            }
+
+            reviewLocked = false;
+            const word = reviewList[reviewIndex];
+
+            document.getElementById('review-counter').textContent = `${reviewIndex + 1}/${reviewList.length}`;
+            document.getElementById('review-progress-bar').style.width = `${((reviewIndex + 1) / reviewList.length) * 100}%`;
+
+            if (reviewMode === 'flashcard') renderReviewFlashcard(word);
+            if (reviewMode === 'quiz') renderQuiz(word);
+            if (reviewMode === 'typing') renderTyping(word);
+        }
+
+        function renderReviewFlashcard(word) {
+            document.getElementById('review-container').innerHTML = `
+                <div id="review-card" onclick="toggleCard('review-card')" class="flip-container w-full rounded-3xl overflow-hidden cursor-pointer mb-4" style="height: 420px;">
+                    <div class="flip-inner w-full h-full">
+                        <div class="flip-front w-full h-full surface flex flex-col items-center justify-center p-6 gap-6" style="box-shadow: 0 20px 48px rgba(0, 0, 0, 0.08);">
+                            <span style="font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 10px; background: linear-gradient(135deg, var(--color-review-light) 0%, var(--color-review-lighter) 100%); color: var(--color-review); text-transform: uppercase; letter-spacing: 0.5px;">${escapeHTML(word.chude)}</span>
+                            <h2 style="font-size: 52px; font-weight: 800; text-align: center; color: var(--text-primary); word-break: break-words; line-height: 1.2;">${escapeHTML(word.tuvung)}</h2>
+                            <p style="font-size: 15px; color: var(--text-secondary); font-weight: 500;">${escapeHTML(word.loaitu ? '(' + word.loaitu + ')' : '')}</p>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: auto; font-weight: 500;">Chạm để xem dịch nghĩa</p>
+                        </div>
+
+                        <div class="flip-back w-full h-full flex flex-col items-center justify-center p-6 gap-6" style="background: linear-gradient(135deg, var(--color-review) 0%, #059669 100%); color: white; box-shadow: 0 20px 48px rgba(16, 185, 129, 0.2);">
+                            <p style="font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Dịch Nghĩa</p>
+                            <h2 style="font-size: 44px; font-weight: 800; text-align: center; word-break: break-words; line-height: 1.2;">${escapeHTML(word.dichnghia)}</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="completeReview(true)" class="w-full btn btn-success">
+                    <i class="fa-solid fa-arrow-right"></i>Tiếp theo
+                </button>
+            `;
+        }
+
+        function uniqueQuizOptions(word) {
+            const values = new Set([word.dichnghia]);
+            words.filter(other => other.chude === word.chude && other.id !== word.id).sort(() => Math.random() - 0.5).forEach(other => {
+                if (values.size < 4) values.add(other.dichnghia);
+            });
+            return [...values].sort(() => Math.random() - 0.5);
+        }
+
+        function renderQuiz(word) {
+            const options = uniqueQuizOptions(word);
+            document.getElementById('review-container').innerHTML = `
+                <div class="surface rounded-2xl p-5 mb-4" style="box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);">
+                    <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Chọn Nghĩa Đúng</p>
+                    <h2 style="font-size: 28px; font-weight: 800; color: var(--text-primary);">${escapeHTML(word.tuvung)}</h2>
+                    <p style="font-size: 14px; color: var(--text-secondary); margin-top: 8px; font-weight: 500;">${escapeHTML(word.loaitu ? '(' + word.loaitu + ')' : '')}</p>
+                </div>
+
+                <div class="space-y-2">
+                    ${options.map((option, index) => `
+                        <button
+                            data-answer="${escapeHTML(option)}"
+                            data-correct="${escapeHTML(word.dichnghia)}"
+                            onclick="answerQuiz(this)"
+                            class="quiz-option w-full surface rounded-xl p-4 flex items-center gap-3 text-left font-medium text-sm transition-all duration-300 hover:shadow-md"
+                            style="border: 2px solid var(--border);">
+                            <span style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--color-warn-light) 0%, var(--color-warn-lighter) 100%); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--color-warn);">${String.fromCharCode(65 + index)}</span>
+                            <span>${escapeHTML(option)}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function answerQuiz(button) {
+            if (reviewLocked) return;
+            reviewLocked = true;
+
+            const selected = button.dataset.answer;
+            const correct = button.dataset.correct;
+            const buttons = document.querySelectorAll('.quiz-option');
+
+            buttons.forEach(item => {
+                item.disabled = true;
+                if (item.dataset.answer === correct) {
+                    item.style.backgroundColor = 'var(--color-review-light)';
+                    item.style.borderColor = 'var(--color-review)';
+                    item.style.color = 'var(--color-review)';
+                }
+            });
+
+            const isCorrect = selected === correct;
+            if (!isCorrect) {
+                button.style.backgroundColor = '#fee2e2';
+                button.style.borderColor = '#ef4444';
+                button.style.color = '#991b1b';
+            }
+
+            setTimeout(() => completeReview(isCorrect), 800);
+        }
+
+        function renderTyping(word) {
+            const wordLength = word.tuvung.length;
+            const inputsHTML = Array(wordLength).fill(0).map((_, i) => `
+                <input
+                    type="text"
+                    inputmode="text"
+                    maxlength="1"
+                    autocomplete="off"
+                    class="char-input surface rounded-lg"
+                    style="border: 2px solid var(--border);"
+                    onkeydown="handleCharInput(event, this, ${i}, ${wordLength})"
+                    oninput="handleCharInput(event, this, ${i}, ${wordLength})"
+                    onpaste="return false"
+                >
+            `).join('');
+
+            document.getElementById('review-container').innerHTML = `
+                <div class="surface rounded-2xl p-5 mb-4" style="box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);">
+                    <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Gợi Ý: ${escapeHTML(word.loaitu)}</p>
+                    <h2 style="font-size: 28px; font-weight: 800; color: var(--text-primary);">${escapeHTML(word.dichnghia)}</h2>
+                </div>
+
+                <div class="flex gap-2 justify-center mb-4 flex-wrap">
+                    ${inputsHTML}
+                </div>
+
+                <button onclick="checkTyping()" class="w-full btn btn-primary mb-3">
+                    <i class="fa-solid fa-check"></i>Kiểm tra
+                </button>
+
+                <div id="typing-result"></div>
+            `;
+
+            setTimeout(() => {
+                document.querySelector('.char-input')?.focus();
+            }, 100);
+        }
+
+        function handleCharInput(event, input, index, total) {
+            const inputs = [...document.querySelectorAll('.char-input')];
+
+            if (event.type === 'keydown') {
+                if (event.key === 'Backspace') {
+                    event.preventDefault();
+                    input.value = '';
+                    if (index > 0) {
+                        inputs[index - 1].focus();
+                        inputs[index - 1].value = '';
+                    }
+                    return;
+                }
+
+                if (event.key === 'ArrowLeft' && index > 0) {
+                    event.preventDefault();
+                    inputs[index - 1].focus();
+                    return;
+                }
+
+                if (event.key === 'ArrowRight' && index < total - 1) {
+                    event.preventDefault();
+                    inputs[index + 1].focus();
+                    return;
+                }
+
+                if (event.key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey) {
+                    return;
+                }
+
+                event.preventDefault();
+                let char = event.key.toLowerCase();
+                input.value = char;
+                input.style.borderColor = 'var(--color-study)';
+
+                if (index < total - 1) {
+                    inputs[index + 1].focus();
+                }
+                return;
+            }
+
+            if (event.type === 'input') {
+                let value = input.value.toLowerCase();
+                value = value.replace(/[^a-z\s'-]/g, '').slice(-1);
+                input.value = value;
+
+                if (value && index < total - 1) {
+                    inputs[index + 1].focus();
+                }
+            }
+        }
+
+        function checkTyping() {
+            if (reviewLocked) return;
+
+            const word = reviewList[reviewIndex];
+            const inputs = document.querySelectorAll('.char-input');
+            const answer = normalize([...inputs].map(i => i.value).join(''));
+            const correct = normalize(word.tuvung);
+            const isCorrect = answer === correct;
+
+            reviewLocked = true;
+            inputs.forEach(input => input.disabled = true);
+
+            const result = document.getElementById('typing-result');
+
+            if (isCorrect) {
+                inputs.forEach(input => {
+                    input.style.backgroundColor = 'var(--color-review-light)';
+                    input.style.borderColor = 'var(--color-review)';
+                    input.style.color = 'var(--color-review)';
+                });
+
+                result.innerHTML = `
+                    <div style="padding: 14px; border-radius: 12px; background: linear-gradient(135deg, var(--color-review-light) 0%, var(--color-review-lighter) 100%); color: var(--color-review); text-align: center; font-weight: 700; font-size: 16px;">
+                        <i class="fa-solid fa-check mr-2"></i>Chính xác!
+                    </div>
+                `;
+            } else {
+                inputs.forEach(input => {
+                    input.style.backgroundColor = '#fee2e2';
+                    input.style.borderColor = '#ef4444';
+                    input.style.color = '#991b1b';
+                });
+
+                result.innerHTML = `
+                    <div style="padding: 14px; border-radius: 12px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%); color: #991b1b; text-align: center; font-size: 15px;">
+                        <strong>Chưa chính xác</strong><br>
+                        <span style="font-size: 13px;">Đáp án: ${escapeHTML(word.tuvung)}</span>
+                    </div>
+                `;
+            }
+
+            setTimeout(() => completeReview(isCorrect), 800);
+        }
+
+        function completeReview(isCorrect) {
+            const current = reviewList[reviewIndex];
+            const original = words.find(word => word.id === current.id);
+
+            if (original && isCorrect) {
+                original.reviewCount += 1;
+                saveData();
+            }
+
+            reviewIndex++;
+            renderReview();
+        }
+
+        function endReview() {
+            if (confirm('Kết thúc phiên ôn tập?')) {
+                navigate('home');
+            }
+        }
+
+        function renderManage() {
+            const search = normalize(document.getElementById('search-input')?.value || '');
+            const deckFilter = document.getElementById('deck-filter')?.value || '';
+            const status = document.getElementById('status-filter')?.value || '';
+            const sort = document.getElementById('sort-select')?.value || 'deck';
+
+            const decks = getDecks();
+            document.getElementById('deck-filter').innerHTML = `<option value="">Tất cả bộ</option>` + decks.map(d => `<option value="${escapeHTML(d)}">${escapeHTML(d)}</option>`).join('');
+
+            let filtered = words.filter(word => {
+                const matchesSearch = !search || normalize(word.chude).includes(search) || normalize(word.tuvung).includes(search) || normalize(word.dichnghia).includes(search) || normalize(word.loaitu).includes(search);
+                const matchesDeck = !deckFilter || word.chude === deckFilter;
+                const matchesStatus = !status || (status === 'learned' && word.learned) || (status === 'unlearned' && !word.learned);
+                return matchesSearch && matchesDeck && matchesStatus;
+            });
+
+            filtered.sort((a, b) => {
+                if (sort === 'word') return a.tuvung.localeCompare(b.tuvung, 'en');
+                if (sort === 'reviewAsc') return a.reviewCount - b.reviewCount;
+                if (sort === 'reviewDesc') return b.reviewCount - a.reviewCount;
+                return a.chude.localeCompare(b.chude, 'vi');
+            });
+
+            const container = document.getElementById('deck-list');
+
+            if (!words.length) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px 16px; color: var(--text-secondary); font-size: 15px;">Chưa có dữ liệu</p>';
+                return;
+            }
+
+            if (!filtered.length) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px 16px; color: var(--text-secondary); font-size: 15px;">Không tìm thấy dữ liệu</p>';
+                return;
+            }
+
+            const grouped = {};
+            filtered.forEach(word => {
+                grouped[word.chude] ||= [];
+                grouped[word.chude].push(word);
+            });
+
+            container.innerHTML = Object.entries(grouped).map(([deck, list]) => {
+                const total = words.filter(word => word.chude === deck).length;
+                const learned = words.filter(word => word.chude === deck && word.learned).length;
+                const progress = total ? Math.round((learned / total) * 100) : 0;
+
+                return `
+                    <details open class="surface rounded-2xl overflow-hidden" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);">
+                        <summary class="deck-header list-none" style="cursor: pointer;">
+                            <div class="deck-title-area">
+                                <i class="deck-icon fa-solid fa-folder"></i>
+                                <div>
+                                    <h3>${escapeHTML(deck)}</h3>
+                                    <p>${learned}/${total} từ • ${progress}%</p>
+                                </div>
+                            </div>
+
+                            <div class="deck-actions">
+                                <button onclick="event.stopPropagation(); openEditDeckName('${escapeHTML(deck)}')" aria-label="Đổi tên" title="Đổi tên bộ thẻ">
+                                    <i class="fa-solid fa-pen text-sm"></i>
+                                </button>
+
+                                <button onclick="event.stopPropagation(); openDeleteDeckModal('${escapeHTML(deck)}')" aria-label="Xoá bộ thẻ" title="Xoá bộ thẻ">
+                                    <i class="fa-solid fa-trash text-sm"></i>
+                                </button>
+
+                                <button class="deck-toggle" aria-label="Mở/đóng" title="Mở hoặc đóng bộ thẻ">
+                                    <i class="fa-solid fa-chevron-down text-sm"></i>
+                                </button>
+                            </div>
+                        </summary>
+
+                        <div class="table-scroll rounded-b-2xl" style="border-top: 1px solid var(--border);">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Từ vựng</th>
+                                        <th>Từ loại</th>
+                                        <th>Dịch nghĩa</th>
+                                        <th style="text-align: center;">Ôn</th>
+                                        <th style="text-align: center;">Trạng thái</th>
+                                        <th style="text-align: center;">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${list.map(word => `
+                                        <tr>
+                                            <td style="font-weight: 700;">${escapeHTML(word.tuvung)}</td>
+                                            <td>${escapeHTML(word.loaitu)}</td>
+                                            <td>${escapeHTML(word.dichnghia)}</td>
+                                            <td style="text-align: center; font-weight: 700;">${word.reviewCount}</td>
+                                            <td style="text-align: center;">
+                                                <span class="status-badge ${word.learned ? 'status-learned' : 'status-unlearned'}">
+                                                    ${word.learned ? '✓ Đã học' : 'Chưa học'}
+                                                </span>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <button onclick="openEditWord('${word.id}')" class="action-icon" aria-label="Chỉnh sửa">
+                                                    <i class="fa-solid fa-pen-to-square text-sm"></i>
+                                                </button>
+                                                <button onclick="deleteWord('${word.id}')" class="action-icon danger" aria-label="Xoá">
+                                                    <i class="fa-solid fa-trash text-sm"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                `;
+            }).join('');
+        }
+
+        function openEditWord(id) {
+            const word = words.find(w => w.id === id);
+            if (!word) return;
+
+            editingWordId = id;
+            document.getElementById('edit-chude').value = word.chude;
+            document.getElementById('edit-tuvung').value = word.tuvung;
+            document.getElementById('edit-loaitu').value = word.loaitu;
+            document.getElementById('edit-dichnghia').value = word.dichnghia;
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+            editingWordId = null;
+        }
+
+        function saveEditedWord() {
+            const word = words.find(w => w.id === editingWordId);
+            if (!word) return;
+
+            word.chude = document.getElementById('edit-chude').value.trim();
+            word.tuvung = document.getElementById('edit-tuvung').value.trim();
+            word.loaitu = document.getElementById('edit-loaitu').value.trim();
+            word.dichnghia = document.getElementById('edit-dichnghia').value.trim();
+
+            if (!word.chude || !word.tuvung || !word.loaitu || !word.dichnghia) {
+                alert('Vui lòng điền đầy đủ thông tin.');
+                return;
+            }
+
+            saveData();
+            closeEditModal();
+            renderManage();
+            renderHome();
+        }
+
+        function deleteWord(id) {
+            if (!confirm('Xoá từ này?')) return;
+            words = words.filter(w => w.id !== id);
+            saveData();
+            renderManage();
+            renderHome();
+        }
+
+        function openEditDeckName(deck) {
+            const newName = prompt('Sửa tên bộ thẻ:', deck);
+            if (!newName || newName === deck) return;
+
+            words.forEach(word => {
+                if (word.chude === deck) {
+                    word.chude = newName.trim();
+                }
+            });
+
+            saveData();
+            renderManage();
+            renderHome();
+        }
+
+        function openDeleteDeckModal(deck) {
+            deletingDeckName = deck;
+            const count = words.filter(w => w.chude === deck).length;
+            document.getElementById('delete-deck-name').textContent = `Xoá bộ thẻ "${deck}" và tất cả ${count} từ trong đó?`;
+            document.getElementById('delete-deck-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteDeckModal() {
+            document.getElementById('delete-deck-modal').classList.add('hidden');
+            deletingDeckName = null;
+        }
+
+        function confirmDeleteDeck() {
+            words = words.filter(w => w.chude !== deletingDeckName);
+            saveData();
+            closeDeleteDeckModal();
+            renderManage();
+            renderHome();
+        }
+
+        function downloadExcelTemplate() {
+            const data = [
+                { chude: 'General', tuvung: 'abandon', loaitu: 'verb', dichnghia: 'từ bỏ' },
+                { chude: 'Medical', tuvung: 'dyspnea', loaitu: 'noun', dichnghia: 'khó thở' }
+            ];
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Flashcards');
+            XLSX.writeFile(workbook, 'flashcard_template.xlsx');
+        }
+
+        function handleExcelImport(event) {
+            const file = event.target.files[0];
+            event.target.value = '';
+
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(loadEvent) {
+                try {
+                    const workbook = XLSX.read(loadEvent.target.result, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+                    importRows = [];
+                    importErrors = [];
+
+                    rows.forEach((row, index) => {
+                        const line = index + 2;
+                        const chude = String(row.chude || '').trim();
+                        const tuvung = String(row.tuvung || '').trim();
+                        const loaitu = String(row.loaitu ?? row.tuloai ?? '').trim();
+                        const dichnghia = String(row.dichnghia || '').trim();
+
+                        if (!chude && !tuvung && !loaitu && !dichnghia) {
+                            importErrors.push(`Dòng ${line}: trống`);
+                            return;
+                        }
+
+                        const missing = [];
+                        if (!chude) missing.push('chude');
+                        if (!tuvung) missing.push('tuvung');
+                        if (!loaitu) missing.push('loaitu');
+                        if (!dichnghia) missing.push('dichnghia');
+
+                        if (missing.length) {
+                            importErrors.push(`Dòng ${line}: thiếu ${missing.join(', ')}`);
+                            return;
+                        }
+
+                        importRows.push({ line, chude, tuvung, loaitu, dichnghia });
+                    });
+
+                    const duplicateInFile = new Set();
+                    importRows = importRows.filter(row => {
+                        const key = getWordKey({ chude: row.chude, tuvung: row.tuvung, loaitu: row.loaitu });
+                        if (duplicateInFile.has(key)) {
+                            importErrors.push(`Dòng ${row.line}: trùng lặp`);
+                            return false;
+                        }
+                        duplicateInFile.add(key);
+                        return true;
+                    });
+
+                    showImportModal();
+                } catch (error) {
+                    alert('Không thể đọc file Excel.');
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function showImportModal() {
+            const modal = document.getElementById('import-modal');
+            const body = document.getElementById('import-preview-body');
+            const summary = document.getElementById('import-summary');
+            const errors = document.getElementById('import-errors');
+
+            summary.textContent = `${importRows.length} dòng hợp lệ${importErrors.length ? ` • ${importErrors.length} lỗi` : ''}`;
+
+            body.innerHTML = importRows.slice(0, 100).map(row => `
+                <tr>
+                    <td>${row.line}</td>
+                    <td>${escapeHTML(row.chude)}</td>
+                    <td style="font-weight: 700;">${escapeHTML(row.tuvung)}</td>
+                    <td>${escapeHTML(row.loaitu)}</td>
+                    <td>${escapeHTML(row.dichnghia)}</td>
+                </tr>
+            `).join('');
+
+            if (importErrors.length) {
+                errors.classList.remove('hidden');
+                errors.textContent = importErrors.slice(0, 10).join(' • ');
+            } else {
+                errors.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('import-modal').classList.add('hidden');
+        }
+
+        function confirmImport() {
+            if (!importRows.length) return;
+
+            const policy = document.getElementById('duplicate-policy').value;
+            let added = 0, replaced = 0, skipped = 0;
+
+            importRows.forEach(row => {
+                const key = getWordKey({ chude: row.chude, tuvung: row.tuvung, loaitu: row.loaitu });
+                const existing = words.find(word => getWordKey(word) === key);
+
+                if (existing) {
+                    if (policy === 'replace') {
+                        existing.dichnghia = row.dichnghia;
+                        replaced++;
+                    } else {
+                        skipped++;
+                    }
+                    return;
+                }
+
+                words.push({
+                    id: uid(),
+                    chude: row.chude,
+                    tuvung: row.tuvung,
+                    loaitu: row.loaitu,
+                    dichnghia: row.dichnghia,
+                    learned: false,
+                    reviewCount: 0
+                });
+
+                added++;
+            });
+
+            saveData();
+            closeImportModal();
+            renderManage();
+            renderHome();
+
+            alert(`✨ Thêm: ${added} • Cập nhật: ${replaced} • Bỏ qua: ${skipped}`);
+        }
+
+        function backupData() {
+            const backup = { version: 11, date: new Date().toISOString(), words };
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `backup-${new Date().toISOString().slice(0, 10)}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function restoreData(event) {
+            const file = event.target.files[0];
+            event.target.value = '';
+
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(loadEvent) {
+                try {
+                    const parsed = JSON.parse(loadEvent.target.result);
+                    const restored = Array.isArray(parsed) ? parsed : parsed.words;
+
+                    if (!Array.isArray(restored)) throw new Error('Invalid');
+
+                    const cleaned = restored.map(word => ({
+                        id: word.id || uid(),
+                        chude: String(word.chude || '').trim(),
+                        tuvung: String(word.tuvung || '').trim(),
+                        loaitu: String(word.loaitu ?? '').trim(),
+                        dichnghia: String(word.dichnghia || '').trim(),
+                        learned: Boolean(word.learned),
+                        reviewCount: Math.max(0, Number(word.reviewCount ?? 0))
+                    })).filter(word => word.chude && word.tuvung && word.loaitu && word.dichnghia);
+
+                    if (!cleaned.length) throw new Error('Empty');
+                    if (!confirm(`Khôi phục ${cleaned.length} từ?\n\nDữ liệu hiện tại sẽ bị thay thế.`)) return;
+
+                    words = cleaned;
+                    saveData();
+                    renderHome();
+                    renderManage();
+
+                    alert('✨ Khôi phục thành công!');
+                } catch (e) {
+                    alert('File không hợp lệ.');
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        loadTheme();
+        loadData();
+        navigate('home');
+    </script>
+</body>
+</html>
