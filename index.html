@@ -186,9 +186,10 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="studyPrevious()" class="py-3 rounded-xl bg-slate-500 text-white font-bold"><i class="fa-solid fa-arrow-left mr-1"></i>Quay lại</button>
                 <button onclick="studySkip()" class="py-3 rounded-xl bg-amber-500 text-white font-bold"><i class="fa-solid fa-forward mr-1"></i>Bỏ qua</button>
-                <button onclick="studyNext()" class="py-3 rounded-xl bg-indigo-600 text-white font-bold">Tiếp theo<i class="fa-solid fa-arrow-right ml-1"></i></button>
+                <button id="study-next-btn" onclick="studyNext()" class="py-3 rounded-xl bg-indigo-600 text-white font-bold opacity-50 cursor-not-allowed" disabled>Tiếp theo<i class="fa-solid fa-arrow-right ml-1"></i></button>
             </div>
 
             <button onclick="endStudy()" class="w-full py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold">Kết thúc phiên học</button>
@@ -512,19 +513,22 @@
 
         function startStudy() {
             const selectedDecks = selectedStudyDecks();
-
+        
             if (!selectedDecks.length) {
                 alert('Vui lòng chọn ít nhất một bộ thẻ.');
                 return;
             }
-
+        
             studyList = words.filter(word => selectedDecks.includes(word.chude) && !word.learned);
-
+        
             if (!studyList.length) {
                 alert('Các bộ thẻ đã chọn không còn từ chưa học.');
                 return;
             }
-
+        
+            // ← THÊM: Trộn thứ tự ngẫu nhiên
+            studyList.sort(() => Math.random() - 0.5);
+        
             studyIndex = 0;
             navigate('study-run');
             renderStudyCard();
@@ -533,17 +537,23 @@
         function renderStudyCard() {
             const word = studyList[studyIndex];
             const card = document.getElementById('study-card');
-            card.classList.remove('is-flipped');
-
+            card.classList.remove('is-flipped');  // ← Reset lại trạng thái không lật
+            
+            // Vô hiệu hoá nút tiếp theo
+            const nextBtn = document.getElementById('study-next-btn');
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            nextBtn.classList.remove('opacity-100', 'cursor-pointer');
+        
             document.getElementById('study-counter').textContent = `${studyIndex + 1}/${studyList.length}`;
             document.getElementById('study-progress-bar').style.width = `${((studyIndex + 1) / studyList.length) * 100}%`;
-
+        
             document.getElementById('study-deck-label').textContent = word.chude;
             document.getElementById('study-word').textContent = word.tuvung;
             document.getElementById('study-type').textContent = word.loaitu ? `(${word.loaitu})` : '';
             document.getElementById('study-meaning').textContent = word.dichnghia;
         }
-
+        
         function toggleCard(id) {
             document.getElementById(id).classList.toggle('is-flipped');
         }
@@ -564,6 +574,25 @@
             moveToNextStudyCard();
         }
 
+        function toggleCard(id) {
+            document.getElementById(id).classList.toggle('is-flipped');
+            
+            // Nếu lật thẻ ở study-card thì bật nút tiếp theo
+            if (id === 'study-card') {
+                const nextBtn = document.getElementById('study-next-btn');
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextBtn.classList.add('opacity-100', 'cursor-pointer');
+            }
+        }
+        
+        function studyPrevious() {
+            if (studyIndex > 0) {
+                studyIndex--;
+                renderStudyCard();
+            }
+        }
+        
         function moveToNextStudyCard() {
             studyIndex++;
             if (studyIndex >= studyList.length) {
@@ -637,28 +666,40 @@
                             <p class="text-slate-400 italic mt-3">${escapeHTML(word.loaitu ? '(' + word.loaitu + ')' : '')}</p>
                             <p class="absolute bottom-6 text-xs text-slate-400"><i class="fa-solid fa-rotate mr-1"></i>Chạm để lật thẻ</p>
                         </div>
-
+        
                         <div class="flip-back rounded-3xl bg-emerald-600 text-white shadow-xl flex flex-col items-center justify-center text-center p-6">
                             <span class="text-emerald-100 mb-5">Dịch nghĩa</span>
                             <h2 class="text-3xl font-bold break-words">${escapeHTML(word.dichnghia)}</h2>
                         </div>
                     </div>
                 </div>
-
-                <button onclick="completeReview(true)" class="w-full mt-4 py-3 rounded-xl bg-emerald-600 text-white font-bold">Tiếp theo<i class="fa-solid fa-arrow-right ml-1"></i></button>
+        
+                <!-- ← THÊM 3 nút -->
+                <div class="grid grid-cols-3 gap-3 mt-4">
+                    <button onclick="reviewPrevious()" class="py-3 rounded-xl bg-slate-500 text-white font-bold"><i class="fa-solid fa-arrow-left mr-1"></i>Quay lại</button>
+                    <button onclick="completeReview(true)" class="py-3 rounded-xl bg-emerald-600 text-white font-bold col-span-2">Tiếp theo<i class="fa-solid fa-arrow-right ml-1"></i></button>
+                </div>
             `;
         }
 
+        function reviewPrevious() {
+            if (reviewIndex > 0) {
+                reviewIndex--;
+                renderReview();
+            }
+        }
+        
         function uniqueQuizOptions(word) {
             const values = new Set([word.dichnghia]);
-
+        
+            // ← THAY: Từ tất cả từ đã học, không chỉ từ cùng bộ thẻ
             words
-                .filter(other => other.chude === word.chude && other.id !== word.id)
+                .filter(other => other.learned && other.id !== word.id)  // ← Chỉ lấy từ đã học
                 .sort(() => Math.random() - 0.5)
                 .forEach(other => {
                     if (values.size < 4) values.add(other.dichnghia);
                 });
-
+        
             return [...values].sort(() => Math.random() - 0.5);
         }
 
@@ -709,7 +750,7 @@
                 button.classList.add('border-red-500', 'bg-red-100', 'text-red-700');
             }
 
-            setTimeout(() => completeReview(isCorrect), 900);
+            setTimeout(() => completeReview(isCorrect), 1500);
         }
 
         function renderTyping(word) {
@@ -842,18 +883,19 @@
                 `;
             }
 
-            setTimeout(() => completeReview(isCorrect), 1200);
+            setTimeout(() => completeReview(isCorrect), 1800);
         }
 
         function completeReview(isCorrect) {
             const current = reviewList[reviewIndex];
             const original = words.find(word => word.id === current.id);
-
-            if (original && isCorrect) {
+        
+            // ← THAY ĐỔI: Chỉ cộng nếu đúng và MODE không phải flashcard
+            if (original && isCorrect && reviewMode !== 'flashcard') {
                 original.reviewCount += 1;
                 saveData();
             }
-
+        
             reviewIndex++;
             renderReview();
         }
