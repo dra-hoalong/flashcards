@@ -107,7 +107,8 @@
                     <div>
                         <div class="flex justify-between text-xs mb-1">
                             <span>Tiến độ học</span>
-                            <span id="home-progress-text">0/0</span>
+                            <!-- Sửa 0/0 thành 0% -->
+                            <span id="home-progress-text">0%</span>
                         </div>
                         <div class="h-3 bg-white/20 rounded-full overflow-hidden">
                             <div id="home-progress-bar" class="h-full bg-emerald-300 rounded-full" style="width:0%"></div>
@@ -117,7 +118,8 @@
                     <div>
                         <div class="flex justify-between text-xs mb-1">
                             <span>Tiến độ tốt nghiệp</span>
-                            <span id="home-graduated-text">0/0</span>
+                            <!-- Sửa 0/0 thành 0% -->
+                            <span id="home-graduated-text">0%</span>
                         </div>
                         <div class="h-3 bg-white/20 rounded-full overflow-hidden">
                             <div id="home-graduated-bar" class="h-full bg-purple-300 rounded-full" style="width:0%"></div>
@@ -677,21 +679,25 @@
             const waiting = words.filter(isWaitingGraduation).length;
             const graduated = words.filter(word => word.isGraduated).length;
             
+            // TÍNH TOÁN PHẦN TRĂM: (Số lượng / Tổng số) * 100
             const progressLearned = total ? Math.round((learned / total) * 100) : 0;
             const progressGraduated = total ? Math.round((graduated / total) * 100) : 0;
-
+        
             document.getElementById('home-total').textContent = total;
             document.getElementById('home-learned').textContent = learned;
             document.getElementById('home-unlearned').textContent = unlearned;
             document.getElementById('home-waiting').textContent = waiting;
             document.getElementById('home-graduated').textContent = graduated;
             
-            document.getElementById('home-progress-text').textContent = `${learned}/${total}`;
+            // MỚI: Hiển thị giá trị phần trăm (ví dụ: 10%)
+            document.getElementById('home-progress-text').textContent = `${progressLearned}%`;
             document.getElementById('home-progress-bar').style.width = progressLearned + '%';
             
-            document.getElementById('home-graduated-text').textContent = `${graduated}/${total}`;
+            // MỚI: Hiển thị giá trị phần trăm (ví dụ: 10%)
+            document.getElementById('home-graduated-text').textContent = `${progressGraduated}%`;
             document.getElementById('home-graduated-bar').style.width = progressGraduated + '%';
         }
+
 
         // ========== STUDY MODE ==========
 
