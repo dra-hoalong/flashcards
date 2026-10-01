@@ -102,27 +102,29 @@
                     </div>
                 </div>
                 
-                <!-- Thanh tiến độ -->
-                <div class="mt-4 space-y-3">
+                <!-- Thanh tiến độ (Đã chỉnh 2 thanh trên 1 hàng & tăng độ dày) -->
+                <div class="mt-4 grid grid-cols-2 gap-4">
+                    <!-- Thanh tiến độ học -->
                     <div>
                         <div class="flex justify-between text-xs mb-1">
                             <span>Tiến độ học</span>
-                            <!-- Sửa 0/0 thành 0% -->
                             <span id="home-progress-text">0%</span>
                         </div>
-                        <div class="h-3 bg-white/20 rounded-full overflow-hidden">
-                            <div id="home-progress-bar" class="h-full bg-emerald-300 rounded-full" style="width:0%"></div>
+                        <!-- Tăng chiều cao lên h-5 (hoặc h-6) -->
+                        <div class="h-5 bg-white/20 rounded-full overflow-hidden p-0.5">
+                            <div id="home-progress-bar" class="h-full bg-emerald-300 rounded-full transition-all duration-300" style="width:0%"></div>
                         </div>
                     </div>
                     
+                    <!-- Thanh tiến độ tốt nghiệp -->
                     <div>
                         <div class="flex justify-between text-xs mb-1">
                             <span>Tiến độ tốt nghiệp</span>
-                            <!-- Sửa 0/0 thành 0% -->
                             <span id="home-graduated-text">0%</span>
                         </div>
-                        <div class="h-3 bg-white/20 rounded-full overflow-hidden">
-                            <div id="home-graduated-bar" class="h-full bg-purple-300 rounded-full" style="width:0%"></div>
+                        <!-- Tăng chiều cao lên h-5 (hoặc h-6) -->
+                        <div class="h-5 bg-white/20 rounded-full overflow-hidden p-0.5">
+                            <div id="home-graduated-bar" class="h-full bg-purple-300 rounded-full transition-all duration-300" style="width:0%"></div>
                         </div>
                     </div>
                 </div>
