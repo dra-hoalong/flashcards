@@ -67,13 +67,15 @@
     </header>
 
     <main class="max-w-3xl mx-auto w-full px-4 pt-5 pb-10">
-        <!-- HOME -->
+        
+        <!-- HOME SCREEN -->
         <section id="screen-home" class="app-screen space-y-5">
             <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-r from-indigo-500 to-purple-600">
                 <p class="text-sm opacity-80">Tổng quan kho từ vựng</p>
                 <h2 class="text-2xl font-extrabold mt-1">Học mỗi ngày tốt hơn</h2>
 
-                <div class="grid grid-cols-2 gap-3 mt-5">
+                <!-- Hàng 1: Tổng, Đã học, Chưa học -->
+                <div class="grid grid-cols-3 gap-3 mt-5">
                     <div class="rounded-xl bg-white/15 p-3">
                         <p class="text-xs opacity-80">Tổng số từ</p>
                         <p id="home-total" class="text-xl font-bold">0</p>
@@ -86,19 +88,40 @@
                         <p class="text-xs opacity-80">Chưa học</p>
                         <p id="home-unlearned" class="text-xl font-bold">0</p>
                     </div>
+                </div>
+                
+                <!-- Hàng 2: Chờ tốt nghiệp, Tốt nghiệp -->
+                <div class="grid grid-cols-2 gap-3 mt-3">
                     <div class="rounded-xl bg-white/15 p-3">
-                        <p class="text-xs opacity-80">Tiến độ</p>
-                        <p id="home-progress" class="text-xl font-bold">0%</p>
+                        <p class="text-xs opacity-80">Chờ tốt nghiệp</p>
+                        <p id="home-waiting" class="text-xl font-bold">0</p>
+                    </div>
+                    <div class="rounded-xl bg-white/15 p-3">
+                        <p class="text-xs opacity-80">Tốt nghiệp</p>
+                        <p id="home-graduated" class="text-xl font-bold">0</p>
                     </div>
                 </div>
-
-                <div class="mt-4">
-                    <div class="flex justify-between text-xs mb-1">
-                        <span>Tiến độ chung</span>
-                        <span id="home-progress-text">0/0</span>
+                
+                <!-- Thanh tiến độ -->
+                <div class="mt-4 space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Tiến độ học</span>
+                            <span id="home-progress-text">0/0</span>
+                        </div>
+                        <div class="h-3 bg-white/20 rounded-full overflow-hidden">
+                            <div id="home-progress-bar" class="h-full bg-emerald-300 rounded-full" style="width:0%"></div>
+                        </div>
                     </div>
-                    <div class="h-2 bg-white/20 rounded-full overflow-hidden">
-                        <div id="home-progress-bar" class="h-full bg-emerald-300 rounded-full" style="width:0%"></div>
+                    
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Tiến độ tốt nghiệp</span>
+                            <span id="home-graduated-text">0/0</span>
+                        </div>
+                        <div class="h-3 bg-white/20 rounded-full overflow-hidden">
+                            <div id="home-graduated-bar" class="h-full bg-purple-300 rounded-full" style="width:0%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -139,7 +162,7 @@
             </div>
         </section>
 
-        <!-- STUDY CONFIG -->
+        <!-- STUDY CONFIG SCREEN -->
         <section id="screen-study-config" class="app-screen space-y-5">
             <div class="flex items-center gap-3">
                 <button onclick="navigate('home')" class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
@@ -160,7 +183,7 @@
             </div>
         </section>
 
-        <!-- STUDY RUN -->
+        <!-- STUDY RUN SCREEN -->
         <section id="screen-study-run" class="app-screen space-y-4">
             <div class="flex items-center justify-between">
                 <span class="rounded-full bg-indigo-100 text-indigo-700 px-3 py-1 text-xs font-bold">HỌC FLASHCARD</span>
@@ -195,7 +218,7 @@
             <button onclick="endStudy()" class="w-full py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold">Kết thúc phiên học</button>
         </section>
 
-        <!-- REVIEW CONFIG -->
+        <!-- REVIEW CONFIG SCREEN -->
         <section id="screen-review-config" class="app-screen space-y-5">
             <div class="flex items-center gap-3">
                 <button onclick="navigate('home')" class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
@@ -211,36 +234,58 @@
                     </span>
                     <span class="flex-1">
                         <strong class="block">Flashcard</strong>
-                        <small class="text-slate-500 dark:text-slate-400">Lật thẻ để xem nghĩa và ôn lại</small>
+                        <small class="text-slate-500 dark:text-slate-400">Lật thẻ để xem nghĩa</small>
                     </span>
                     <i class="fa-solid fa-chevron-right text-slate-400"></i>
                 </button>
-
+            
                 <button onclick="startReview('quiz')" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4 text-left shadow-sm hover:shadow-md transition">
                     <span class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-check-circle"></i>
                     </span>
                     <span class="flex-1">
                         <strong class="block">Trắc nghiệm</strong>
-                        <small class="text-slate-500 dark:text-slate-400">Chọn đáp án đúng từ 4 lựa chọn</small>
+                        <small class="text-slate-500 dark:text-slate-400">Chọn đáp án đúng</small>
                     </span>
                     <i class="fa-solid fa-chevron-right text-slate-400"></i>
                 </button>
-
+            
                 <button onclick="startReview('typing')" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4 text-left shadow-sm hover:shadow-md transition">
                     <span class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-keyboard"></i>
                     </span>
                     <span class="flex-1">
                         <strong class="block">Tự luận</strong>
-                        <small class="text-slate-500 dark:text-slate-400">Gõ từ tiếng Anh từng ký tự</small>
+                        <small class="text-slate-500 dark:text-slate-400">Gõ từ tiếng Anh</small>
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                </button>
+            
+                <button onclick="startReview('upgrade')" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4 text-left shadow-sm hover:shadow-md transition">
+                    <span class="w-12 h-12 rounded-xl bg-yellow-100 text-yellow-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-star"></i>
+                    </span>
+                    <span class="flex-1">
+                        <strong class="block">Nâng cấp sao</strong>
+                        <small class="text-slate-500 dark:text-slate-400">Thi để nâng số sao</small>
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                </button>
+            
+                <button onclick="startReview('graduated')" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4 text-left shadow-sm hover:shadow-md transition">
+                    <span class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </span>
+                    <span class="flex-1">
+                        <strong class="block">Review tốt nghiệp</strong>
+                        <small class="text-slate-500 dark:text-slate-400">Ôn lại để duy trì kiến thức</small>
                     </span>
                     <i class="fa-solid fa-chevron-right text-slate-400"></i>
                 </button>
             </div>
         </section>
 
-        <!-- REVIEW RUN -->
+        <!-- REVIEW RUN SCREEN -->
         <section id="screen-review-run" class="app-screen space-y-4">
             <div class="flex items-center justify-between">
                 <span id="review-title" class="rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-bold">ÔN TẬP</span>
@@ -256,7 +301,7 @@
             <button onclick="endReview()" class="w-full py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold">Kết thúc phiên ôn</button>
         </section>
 
-        <!-- MANAGE -->
+        <!-- MANAGE SCREEN -->
         <section id="screen-manage" class="app-screen space-y-5">
             <div class="flex items-center gap-3">
                 <button onclick="navigate('home')" class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
@@ -302,81 +347,189 @@
             <div id="deck-list" class="space-y-3"></div>
         </section>
 
-        <!-- EDIT WORD MODAL -->
-        <div id="edit-modal" class="hidden fixed inset-0 z-50 bg-black/60 p-4 flex items-center justify-center">
-            <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md p-5 max-h-[90vh] overflow-y-auto">
-                <h3 class="font-bold text-lg mb-4">Chỉnh sửa từ vựng</h3>
-
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">Chủ đề</label>
-                        <input id="edit-chude" class="w-full border rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">Từ vựng</label>
-                        <input id="edit-tuvung" class="w-full border rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">Từ loại</label>
-                        <input id="edit-loaitu" class="w-full border rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">Dịch nghĩa</label>
-                        <input id="edit-dichnghia" class="w-full border rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-                    </div>
+        <!-- SELECT COUNT MODAL -->
+        <div id="select-count-modal" class="hidden fixed inset-0 z-50 bg-black/60 p-4 flex items-center justify-center">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md p-5">
+                <h3 class="font-bold text-lg mb-4">Chọn số lượng thẻ để ôn</h3>
+                
+                <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 mb-4">
+                    <p class="text-sm text-slate-600 dark:text-slate-400">
+                        📊 Số thẻ hợp lệ: <span id="eligible-count" class="font-bold">0</span> thẻ
+                    </p>
                 </div>
-
-                <div class="grid grid-cols-2 gap-2 mt-5">
-                    <button onclick="closeEditModal()" class="py-2 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold">Hủy</button>
-                    <button onclick="saveEditedWord()" class="py-2 rounded-xl bg-indigo-600 text-white font-bold">Lưu</button>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">Số thẻ muốn ôn:</label>
+                    <input 
+                        id="count-input" 
+                        type="number" 
+                        min="1" 
+                        max="9999"
+                        placeholder="Nhập số lượng"
+                        oninput="validateCountInput()"
+                        class="w-full border rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 dark:border-slate-700"
+                    >
+                    <p id="count-error" class="text-xs text-red-600 mt-1 hidden"></p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="startReviewWithCount('all')" class="py-2 rounded-xl bg-emerald-600 text-white font-bold">
+                        <i class="fa-solid fa-check mr-1"></i>Chọn tất cả
+                    </button>
+                    <button onclick="startReviewWithCount('custom')" id="count-ok-btn" class="py-2 rounded-xl bg-indigo-600 text-white font-bold opacity-50 cursor-not-allowed" disabled>
+                        OK
+                    </button>
                 </div>
             </div>
         </div>
+
+        <!-- WORD DETAIL MODAL -->
+        <div id="word-detail-modal" class="hidden fixed inset-0 z-50 bg-black/60 p-4 flex items-center justify-center overflow-y-auto">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl my-8 p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-lg">Chi tiết thẻ từ vựng</h3>
+                    <button onclick="closeWordDetailModal()" class="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+        
+                <!-- Chế độ xem thông tin -->
+                <div id="detail-view-mode" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Chủ đề</p>
+                            <p id="detail-chude" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Từ vựng</p>
+                            <p id="detail-tuvung" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2 font-bold"></p>
+                        </div>
+                    </div>
+        
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Loại từ</p>
+                            <p id="detail-loaitu" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Dịch nghĩa</p>
+                            <p id="detail-dichnghia" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2"></p>
+                        </div>
+                    </div>
+        
+                    <div>
+                        <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Trạng thái học</p>
+                        <p id="detail-learned" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2"></p>
+                    </div>
+        
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Ôn Quiz</p>
+                            <p id="detail-quiz" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2 text-center font-bold"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Ôn Typing</p>
+                            <p id="detail-typing" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2 text-center font-bold"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Ôn Tổng</p>
+                            <p id="detail-total" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2 text-center font-bold"></p>
+                        </div>
+                    </div>
+        
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Lần gặp cuối</p>
+                            <p id="detail-lastmodified" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Thời gian chờ</p>
+                            <p id="detail-waitdays" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2"></p>
+                        </div>
+                    </div>
+        
+                    <div>
+                        <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Trạng thái tốt nghiệp</p>
+                        <p id="detail-status" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2"></p>
+                    </div>
+        
+                    <div class="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <button onclick="startEditInDetail()" class="py-2 rounded-xl bg-indigo-600 text-white font-bold text-sm">
+                            <i class="fa-solid fa-pen mr-1"></i>Chỉnh sửa
+                        </button>
+                        <button onclick="deleteWordInDetail()" class="py-2 rounded-xl bg-red-600 text-white font-bold text-sm">
+                            <i class="fa-solid fa-trash mr-1"></i>Xoá
+                        </button>
+                        <button onclick="closeWordDetailModal()" class="py-2 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold text-sm">
+                            Xong
+                        </button>
+                    </div>
+                </div>
+        
+                <!-- Chế độ chỉnh sửa -->
+                <div id="detail-edit-mode" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Dịch nghĩa</label>
+                        <textarea 
+                            id="detail-edit-dichnghia" 
+                            class="w-full border rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 h-24"
+                        ></textarea>
+                    </div>
+        
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="cancelDetailEdit()" class="py-2 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold">
+                            Hủy
+                        </button>
+                        <button onclick="saveDetailEdit()" class="py-2 rounded-xl bg-indigo-600 text-white font-bold">
+                            <i class="fa-solid fa-check mr-1"></i>Lưu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IMPORT PREVIEW MODAL -->
+        <div id="import-modal" class="hidden fixed inset-0 z-50 bg-black/60 p-4 flex items-center justify-center overflow-y-auto">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-3xl my-8 p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-lg">Xem trước dữ liệu nhập</h3>
+                    <button onclick="closeImportModal()" class="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div id="import-summary" class="text-sm mb-3"></div>
+
+                <label class="block text-sm font-semibold mb-2">Xử lý từ trùng (cùng chủ đề, từ vựng, và từ loại)</label>
+
+                <select id="duplicate-policy" class="w-full border rounded-xl p-2 mb-4 bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
+                    <option value="skip">Giữ dữ liệu cũ</option>
+                    <option value="replace">Thay bằng dữ liệu mới</option>
+                </select>
+
+                <div id="import-errors" class="hidden mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-sm"></div>
+
+                <div class="table-scroll overflow-x-auto border rounded-xl mb-4" style="max-height: 300px;">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                            <tr>
+                                <th class="p-2 text-left">Dòng</th>
+                                <th class="p-2 text-left">Chủ đề</th>
+                                <th class="p-2 text-left">Từ vựng</th>
+                                <th class="p-2 text-left">Từ loại</th>
+                                <th class="p-2 text-left">Nghĩa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="import-preview-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="closeImportModal()" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold">Hủy</button>
+                    <button onclick="confirmImport()" class="py-3 rounded-xl bg-emerald-600 text-white font-bold">Xác nhận nhập</button>
+                </div>
+            </div>
+        </div>
+
     </main>
-
-    <!-- IMPORT PREVIEW MODAL -->
-    <div id="import-modal" class="hidden fixed inset-0 z-50 bg-black/60 p-4 flex items-center justify-center">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="font-bold text-lg">Xem trước dữ liệu nhập</h3>
-                <button onclick="closeImportModal()" class="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <div id="import-summary" class="text-sm mb-3"></div>
-
-            <label class="block text-sm font-semibold mb-2">Xử lý từ trùng (cùng chủ đề, từ vựng, và từ loại)</label>
-
-            <select id="duplicate-policy" class="w-full border rounded-xl p-2 mb-4 bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-                <option value="skip">Giữ dữ liệu cũ</option>
-                <option value="replace">Thay bằng dữ liệu mới</option>
-            </select>
-
-            <div id="import-errors" class="hidden mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-sm"></div>
-
-            <div class="table-scroll overflow-x-auto border rounded-xl">
-                <table class="w-full text-sm">
-                    <thead class="bg-slate-100 dark:bg-slate-800">
-                        <tr>
-                            <th class="p-2 text-left">Dòng</th>
-                            <th class="p-2 text-left">Chủ đề</th>
-                            <th class="p-2 text-left">Từ vựng</th>
-                            <th class="p-2 text-left">Từ loại</th>
-                            <th class="p-2 text-left">Nghĩa</th>
-                        </tr>
-                    </thead>
-                    <tbody id="import-preview-body"></tbody>
-                </table>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 mt-4">
-                <button onclick="closeImportModal()" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold">Hủy</button>
-                <button onclick="confirmImport()" class="py-3 rounded-xl bg-emerald-600 text-white font-bold">Xác nhận nhập</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         const STORAGE_KEY = 'FLASHCARD_PRO_V7';
@@ -384,16 +537,19 @@
         let words = [];
         let importRows = [];
         let importErrors = [];
-
         let studyList = [];
         let studyIndex = 0;
-
         let reviewList = [];
         let reviewIndex = 0;
         let reviewMode = 'flashcard';
         let reviewLocked = false;
-
+        let retryQueue = [];
+        let hasBeenDeducted = {};
         let editingWordId = null;
+        let detailingWordId = null;
+        let upgradeTestModes = {}; // Lưu hình thức thi (quiz/typing) cho mỗi từ trong chế độ nâng cấp
+
+        // ========== UTILITY FUNCTIONS ==========
 
         function uid() {
             return 'w_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
@@ -416,6 +572,28 @@
                 .replace(/[\u0300-\u036f]/g, '');
         }
 
+        function getReviewCountTotal(word) {
+            return (word.reviewCountQuiz || 0) + (word.reviewCountTyping || 0);
+        }
+
+        function isWaitingGraduation(word) {
+            const total = getReviewCountTotal(word);
+            return word.learned && 
+                   !word.isGraduated &&
+                   total >= 50 && 
+                   (word.reviewCountQuiz || 0) >= 20 && 
+                   (word.reviewCountTyping || 0) >= 20;
+        }
+
+        function getWaitingDays(word) {
+            if (!word.lastModified) return 0;
+            const last = new Date(word.lastModified);
+            const today = new Date();
+            return Math.floor((today - last) / (1000 * 60 * 60 * 24));
+        }
+
+        // ========== DATA FUNCTIONS ==========
+
         function loadData() {
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
@@ -431,11 +609,15 @@
                     loaitu: String(word.loaitu ?? word.tuloai ?? '').trim(),
                     dichnghia: String(word.dichnghia || '').trim(),
                     learned: Boolean(word.learned),
-                    reviewCount: Number.isFinite(Number(word.reviewCount)) ? Number(word.reviewCount) : Number(word.review_count || 0)
+                    reviewCountQuiz: Number.isFinite(Number(word.reviewCountQuiz)) ? Number(word.reviewCountQuiz) : 0,
+                    reviewCountTyping: Number.isFinite(Number(word.reviewCountTyping)) ? Number(word.reviewCountTyping) : 0,
+                    stars: Number.isFinite(Number(word.stars)) ? Math.max(0, Math.min(3, Number(word.stars))) : 0,
+                    lastModified: word.lastModified ? String(word.lastModified) : null,
+                    isGraduated: Boolean(word.isGraduated),
                 })).filter(word => word.tuvung && word.dichnghia);
             } catch (error) {
                 words = [];
-                alert('Không thể đọc dữ liệu đã lưu.');
+                console.error('Lỗi đọc dữ liệu:', error);
             }
         }
 
@@ -448,6 +630,8 @@
                 a.localeCompare(b, 'vi')
             );
         }
+
+        // ========== NAVIGATION ==========
 
         function navigate(screen) {
             document.querySelectorAll('.app-screen').forEach(section => {
@@ -464,7 +648,11 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function goHome() { navigate('home'); }
+        function goHome() {
+            navigate('home');
+        }
+
+        // ========== THEME ==========
 
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
@@ -480,19 +668,32 @@
             document.getElementById('theme-icon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
         }
 
+        // ========== HOME SCREEN ==========
+
         function renderHome() {
             const total = words.length;
             const learned = words.filter(word => word.learned).length;
             const unlearned = total - learned;
-            const progress = total ? Math.round((learned / total) * 100) : 0;
+            const waiting = words.filter(isWaitingGraduation).length;
+            const graduated = words.filter(word => word.isGraduated).length;
+            
+            const progressLearned = total ? Math.round((learned / total) * 100) : 0;
+            const progressGraduated = total ? Math.round((graduated / total) * 100) : 0;
 
             document.getElementById('home-total').textContent = total;
             document.getElementById('home-learned').textContent = learned;
             document.getElementById('home-unlearned').textContent = unlearned;
-            document.getElementById('home-progress').textContent = progress + '%';
+            document.getElementById('home-waiting').textContent = waiting;
+            document.getElementById('home-graduated').textContent = graduated;
+            
             document.getElementById('home-progress-text').textContent = `${learned}/${total}`;
-            document.getElementById('home-progress-bar').style.width = progress + '%';
+            document.getElementById('home-progress-bar').style.width = progressLearned + '%';
+            
+            document.getElementById('home-graduated-text').textContent = `${graduated}/${total}`;
+            document.getElementById('home-graduated-bar').style.width = progressGraduated + '%';
         }
+
+        // ========== STUDY MODE ==========
 
         function renderStudyDecks() {
             const select = document.getElementById('study-decks');
@@ -513,22 +714,20 @@
 
         function startStudy() {
             const selectedDecks = selectedStudyDecks();
-        
+
             if (!selectedDecks.length) {
                 alert('Vui lòng chọn ít nhất một bộ thẻ.');
                 return;
             }
-        
+
             studyList = words.filter(word => selectedDecks.includes(word.chude) && !word.learned);
-        
+
             if (!studyList.length) {
                 alert('Các bộ thẻ đã chọn không còn từ chưa học.');
                 return;
             }
-        
-            // ← THÊM: Trộn thứ tự ngẫu nhiên
+
             studyList.sort(() => Math.random() - 0.5);
-        
             studyIndex = 0;
             navigate('study-run');
             renderStudyCard();
@@ -537,25 +736,31 @@
         function renderStudyCard() {
             const word = studyList[studyIndex];
             const card = document.getElementById('study-card');
-            card.classList.remove('is-flipped');  // ← Reset lại trạng thái không lật
+            card.classList.remove('is-flipped');
             
-            // Vô hiệu hoá nút tiếp theo
             const nextBtn = document.getElementById('study-next-btn');
             nextBtn.disabled = true;
             nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
             nextBtn.classList.remove('opacity-100', 'cursor-pointer');
-        
+
             document.getElementById('study-counter').textContent = `${studyIndex + 1}/${studyList.length}`;
             document.getElementById('study-progress-bar').style.width = `${((studyIndex + 1) / studyList.length) * 100}%`;
-        
+
             document.getElementById('study-deck-label').textContent = word.chude;
             document.getElementById('study-word').textContent = word.tuvung;
             document.getElementById('study-type').textContent = word.loaitu ? `(${word.loaitu})` : '';
             document.getElementById('study-meaning').textContent = word.dichnghia;
         }
-        
+
         function toggleCard(id) {
             document.getElementById(id).classList.toggle('is-flipped');
+            
+            if (id === 'study-card') {
+                const nextBtn = document.getElementById('study-next-btn');
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextBtn.classList.add('opacity-100', 'cursor-pointer');
+            }
         }
 
         function studyNext() {
@@ -574,29 +779,18 @@
             moveToNextStudyCard();
         }
 
-        function toggleCard(id) {
-            document.getElementById(id).classList.toggle('is-flipped');
-            
-            // Nếu lật thẻ ở study-card thì bật nút tiếp theo
-            if (id === 'study-card') {
-                const nextBtn = document.getElementById('study-next-btn');
-                nextBtn.disabled = false;
-                nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                nextBtn.classList.add('opacity-100', 'cursor-pointer');
-            }
-        }
-        
         function studyPrevious() {
             if (studyIndex > 0) {
                 studyIndex--;
                 renderStudyCard();
             }
         }
-        
+
         function moveToNextStudyCard() {
             studyIndex++;
             if (studyIndex >= studyList.length) {
                 alert('Bạn đã hoàn thành phiên học.');
+                renderHome();
                 navigate('home');
                 return;
             }
@@ -609,51 +803,241 @@
             }
         }
 
+        // ========== REVIEW MODE - SELECTION ==========
+
+        function getEligibleReviewWords(mode) {
+            if (mode === 'flashcard') {
+                // Flashcard: Thẻ thường + chờ tốt nghiệp
+                return words.filter(word => 
+                    word.learned && 
+                    !word.isGraduated
+                );
+            } 
+            else if (mode === 'quiz') {
+                // Quiz: Chỉ thẻ thường (KHÔNG chờ tốt nghiệp)
+                return words.filter(word => 
+                    word.learned && 
+                    !word.isGraduated &&
+                    !isWaitingGraduation(word)
+                );
+            } 
+            else if (mode === 'typing') {
+                // Typing: Chỉ thẻ thường (KHÔNG chờ tốt nghiệp)
+                return words.filter(word => 
+                    word.learned && 
+                    !word.isGraduated &&
+                    !isWaitingGraduation(word)
+                );
+            }
+            else if (mode === 'upgrade') {
+                // Nâng cấp sao: Chờ tốt nghiệp + stars < 3
+                return words.filter(word => 
+                    isWaitingGraduation(word) && 
+                    word.stars < 3
+                );
+            }
+            else if (mode === 'graduated') {
+                // Review tốt nghiệp: Chỉ graduated
+                return words.filter(word => 
+                    word.isGraduated
+                );
+            }
+            return [];
+        }
+
         function startReview(mode) {
-            reviewMode = mode;
+            openSelectCountModal(mode);
+        }
 
-            reviewList = words
-                .filter(word => word.learned)
-                .sort((a, b) => {
-                    const diff = a.reviewCount - b.reviewCount;
-                    return diff || Math.random() - 0.5;
-                });
-
-            if (!reviewList.length) {
-                alert('Chưa có từ nào ở trạng thái Đã học để ôn tập.');
+        function openSelectCountModal(mode) {
+            const eligible = getEligibleReviewWords(mode);
+            const maxCount = eligible.length;
+            
+            if (maxCount === 0) {
+                const modeNames = {
+                    flashcard: 'Flashcard',
+                    quiz: 'Trắc nghiệm',
+                    typing: 'Tự luận',
+                    upgrade: 'Nâng cấp sao',
+                    graduated: 'Review tốt nghiệp'
+                };
+                alert(`Không có thẻ nào hợp lệ để ôn tập chế độ "${modeNames[mode]}".`);
                 return;
             }
+            
+            window.currentReviewMode = mode;
+            window.maxSelectCount = maxCount;
+            
+            document.getElementById('eligible-count').textContent = maxCount;
+            document.getElementById('count-input').value = '';
+            document.getElementById('count-input').max = maxCount;
+            document.getElementById('count-error').classList.add('hidden');
+            document.getElementById('count-ok-btn').disabled = true;
+            document.getElementById('count-ok-btn').classList.add('opacity-50', 'cursor-not-allowed');
+            document.getElementById('count-ok-btn').classList.remove('opacity-100', 'cursor-pointer');
+            
+            document.getElementById('select-count-modal').classList.remove('hidden');
+            
+            setTimeout(() => {
+                document.getElementById('count-input').focus();
+            }, 100);
+        }
 
+        function closeSelectCountModal() {
+            document.getElementById('select-count-modal').classList.add('hidden');
+            window.currentReviewMode = null;
+            window.maxSelectCount = 0;
+        }
+
+        function validateCountInput() {
+            const input = document.getElementById('count-input');
+            const value = parseInt(input.value, 10);
+            const maxCount = window.maxSelectCount;
+            const errorEl = document.getElementById('count-error');
+            const okBtn = document.getElementById('count-ok-btn');
+            
+            if (!input.value.trim()) {
+                errorEl.classList.add('hidden');
+                okBtn.disabled = true;
+                okBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                okBtn.classList.remove('opacity-100', 'cursor-pointer');
+                return;
+            }
+            
+            if (isNaN(value) || value < 1) {
+                errorEl.textContent = 'Vui lòng nhập số dương.';
+                errorEl.classList.remove('hidden');
+                okBtn.disabled = true;
+                okBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                okBtn.classList.remove('opacity-100', 'cursor-pointer');
+                return;
+            }
+            
+            if (value > maxCount) {
+                errorEl.textContent = `Số lượng không được vượt quá ${maxCount}.`;
+                errorEl.classList.remove('hidden');
+                okBtn.disabled = true;
+                okBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                okBtn.classList.remove('opacity-100', 'cursor-pointer');
+                return;
+            }
+            
+            errorEl.classList.add('hidden');
+            okBtn.disabled = false;
+            okBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            okBtn.classList.add('opacity-100', 'cursor-pointer');
+        }
+
+        function startReviewWithCount(type) {
+            const mode = window.currentReviewMode;
+            const maxCount = window.maxSelectCount;
+            
+            let selectedCount = maxCount;
+            
+            if (type === 'custom') {
+                const value = parseInt(document.getElementById('count-input').value, 10);
+                if (isNaN(value) || value < 1 || value > maxCount) {
+                    alert('Số lượng không hợp lệ.');
+                    return;
+                }
+                selectedCount = value;
+            }
+            
+            closeSelectCountModal();
+            
+            let eligible = getEligibleReviewWords(mode);
+            
+            // Sắp xếp theo loại chế độ
+            if (mode === 'quiz') {
+                eligible.sort((a, b) => {
+                    const diff = (a.reviewCountQuiz || 0) - (b.reviewCountQuiz || 0);
+                    return diff || Math.random() - 0.5;
+                });
+            } 
+            else if (mode === 'typing') {
+                eligible.sort((a, b) => {
+                    const diff = (a.reviewCountTyping || 0) - (b.reviewCountTyping || 0);
+                    return diff || Math.random() - 0.5;
+                });
+            } 
+            else if (mode === 'flashcard') {
+                eligible.sort((a, b) => {
+                    const diff = getReviewCountTotal(a) - getReviewCountTotal(b);
+                    return diff || Math.random() - 0.5;
+                });
+            }
+            else if (mode === 'upgrade') {
+                // Sắp xếp random cho nâng cấp sao
+                eligible.sort(() => Math.random() - 0.5);
+                
+                // Gán hình thức thi ngẫu nhiên cho mỗi từ: quiz hoặc typing
+                upgradeTestModes = {};
+                eligible.forEach(word => {
+                    upgradeTestModes[word.id] = Math.random() < 0.5 ? 'quiz' : 'typing';
+                });
+            }
+            else if (mode === 'graduated') {
+                // Review tốt nghiệp: random
+                eligible.sort(() => Math.random() - 0.5);
+            }
+            
+            reviewList = eligible.slice(0, selectedCount);
+            reviewList.sort(() => Math.random() - 0.5);
+            
+            reviewMode = mode;
             reviewIndex = 0;
             reviewLocked = false;
-
+            retryQueue = [];
+            hasBeenDeducted = {};
+            
             const titles = {
                 flashcard: 'Ôn tập Flashcard',
                 quiz: 'Trắc nghiệm',
-                typing: 'Tự luận'
+                typing: 'Tự luận',
+                upgrade: 'Nâng cấp sao',
+                graduated: 'Review tốt nghiệp'
             };
-
-            document.getElementById('review-title').textContent = titles[reviewMode];
+            
+            document.getElementById('review-title').textContent = titles[mode];
             navigate('review-run');
             renderReview();
         }
 
+        // ========== REVIEW MODE - EXECUTION (PHẦN 2 - SẼ TIẾP THEO) ==========
+
         function renderReview() {
             if (reviewIndex >= reviewList.length) {
-                alert('Bạn đã hoàn thành phiên ôn tập.');
-                navigate('home');
+                showReviewCompletionScreen();
                 return;
             }
-
+        
             reviewLocked = false;
             const word = reviewList[reviewIndex];
-
+        
             document.getElementById('review-counter').textContent = `${reviewIndex + 1}/${reviewList.length}`;
             document.getElementById('review-progress-bar').style.width = `${((reviewIndex + 1) / reviewList.length) * 100}%`;
-
-            if (reviewMode === 'flashcard') renderReviewFlashcard(word);
-            if (reviewMode === 'quiz') renderQuiz(word);
-            if (reviewMode === 'typing') renderTyping(word);
+        
+            if (reviewMode === 'flashcard') {
+                renderReviewFlashcard(word);
+            } 
+            else if (reviewMode === 'quiz') {
+                renderQuiz(word);
+            } 
+            else if (reviewMode === 'typing') {
+                renderTyping(word);
+            }
+            else if (reviewMode === 'upgrade') {
+                // Nâng cấp sao: lấy hình thức thi ngẫu nhiên từ upgradeTestModes
+                const testMode = upgradeTestModes[word.id];
+                if (testMode === 'quiz') {
+                    renderQuiz(word);
+                } else {
+                    renderTyping(word);
+                }
+            }
+            else if (reviewMode === 'graduated') {
+                renderReviewFlashcard(word);
+            }
         }
 
         function renderReviewFlashcard(word) {
@@ -674,10 +1058,9 @@
                     </div>
                 </div>
         
-                <!-- ← THÊM 3 nút -->
                 <div class="grid grid-cols-3 gap-3 mt-4">
-                    <button onclick="reviewPrevious()" class="py-3 rounded-xl bg-slate-500 text-white font-bold"><i class="fa-solid fa-arrow-left mr-1"></i>Quay lại</button>
-                    <button onclick="completeReview(true)" class="py-3 rounded-xl bg-emerald-600 text-white font-bold col-span-2">Tiếp theo<i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    <button onclick="reviewPrevious()" class="py-3 rounded-xl bg-slate-500 text-white font-bold text-sm"><i class="fa-solid fa-arrow-left mr-1"></i>Quay lại</button>
+                    <button onclick="completeReview(true)" class="py-3 rounded-xl bg-emerald-600 text-white font-bold col-span-2 text-sm">Tiếp theo<i class="fa-solid fa-arrow-right ml-1"></i></button>
                 </div>
             `;
         }
@@ -688,18 +1071,17 @@
                 renderReview();
             }
         }
-        
+
         function uniqueQuizOptions(word) {
             const values = new Set([word.dichnghia]);
-        
-            // ← THAY: Từ tất cả từ đã học, không chỉ từ cùng bộ thẻ
+
             words
-                .filter(other => other.learned && other.id !== word.id)  // ← Chỉ lấy từ đã học
+                .filter(other => other.learned && other.id !== word.id)
                 .sort(() => Math.random() - 0.5)
                 .forEach(other => {
                     if (values.size < 4) values.add(other.dichnghia);
                 });
-        
+
             return [...values].sort(() => Math.random() - 0.5);
         }
 
@@ -889,15 +1271,100 @@
         function completeReview(isCorrect) {
             const current = reviewList[reviewIndex];
             const original = words.find(word => word.id === current.id);
-        
-            // ← THAY ĐỔI: Chỉ cộng nếu đúng và MODE không phải flashcard
-            if (original && isCorrect && reviewMode !== 'flashcard') {
-                original.reviewCount += 1;
-                saveData();
+            
+            if (!original) {
+                moveToNextReview();
+                return;
             }
-        
+            
+            if (reviewMode === 'flashcard') {
+                // Flashcard: không tính reviewCount
+                moveToNextReview();
+            } 
+            else if (reviewMode === 'quiz') {
+                if (isCorrect) {
+                    original.reviewCountQuiz += 1;
+                    original.lastModified = new Date().toISOString().split('T')[0];
+                    saveData();
+                }
+                moveToNextReview();
+            } 
+            else if (reviewMode === 'typing') {
+                if (isCorrect) {
+                    original.reviewCountTyping += 1;
+                    original.lastModified = new Date().toISOString().split('T')[0];
+                    saveData();
+                }
+                moveToNextReview();
+            }
+            else if (reviewMode === 'upgrade') {
+                // Nâng cấp sao: cộng/trừ sao
+                if (isCorrect) {
+                    original.stars = Math.min(3, (original.stars || 0) + 1);
+                    
+                    // Nếu đạt 3 sao -> tốt nghiệp
+                    if (original.stars === 3) {
+                        original.isGraduated = true;
+                    }
+                    
+                    // Cộng reviewCount tương ứng
+                    const testMode = upgradeTestModes[original.id];
+                    if (testMode === 'quiz') {
+                        original.reviewCountQuiz += 1;
+                    } else {
+                        original.reviewCountTyping += 1;
+                    }
+                } else {
+                    original.stars = Math.max(0, (original.stars || 0) - 1);
+                    
+                    // Trừ reviewCount tương ứng
+                    const testMode = upgradeTestModes[original.id];
+                    if (testMode === 'quiz') {
+                        original.reviewCountQuiz -= 1;
+                    } else {
+                        original.reviewCountTyping -= 1;
+                    }
+                }
+                
+                original.lastModified = new Date().toISOString().split('T')[0];
+                saveData();
+                moveToNextReview();
+            }
+            else if (reviewMode === 'graduated') {
+                // Review tốt nghiệp: không tính gì
+                moveToNextReview();
+            }
+        }
+
+        function moveToNextReview() {
             reviewIndex++;
+            
+            if (reviewIndex >= reviewList.length) {
+                if (retryQueue.length > 0) {
+                    reviewList = retryQueue.sort(() => Math.random() - 0.5);
+                    retryQueue = [];
+                    reviewIndex = 0;
+                } else {
+                    showReviewCompletionScreen();
+                    return;
+                }
+            }
+            
             renderReview();
+        }
+
+        function showReviewCompletionScreen() {
+            const modeNames = {
+                flashcard: 'Ôn tập Flashcard',
+                quiz: 'Trắc nghiệm',
+                typing: 'Tự luận',
+                upgrade: 'Nâng cấp sao',
+                graduated: 'Review tốt nghiệp'
+            };
+            
+            alert(`Bạn đã hoàn thành phiên ${modeNames[reviewMode].toLowerCase()}.`);
+            renderHome();
+            navigate('home');
         }
 
         function endReview() {
@@ -905,6 +1372,107 @@
                 navigate('home');
             }
         }
+
+        // ========== WORD DETAIL MODAL ==========
+
+        function openWordDetail(id) {
+            const word = words.find(w => w.id === id);
+            if (!word) return;
+            
+            detailingWordId = id;
+            
+            document.getElementById('detail-view-mode').classList.remove('hidden');
+            document.getElementById('detail-edit-mode').classList.add('hidden');
+            
+            document.getElementById('detail-chude').textContent = escapeHTML(word.chude);
+            document.getElementById('detail-tuvung').textContent = escapeHTML(word.tuvung);
+            document.getElementById('detail-loaitu').textContent = escapeHTML(word.loaitu);
+            document.getElementById('detail-dichnghia').textContent = escapeHTML(word.dichnghia);
+            
+            document.getElementById('detail-learned').textContent = word.learned ? '✅ Đã học' : '⏳ Chưa học';
+            
+            document.getElementById('detail-quiz').textContent = (word.reviewCountQuiz || 0);
+            document.getElementById('detail-typing').textContent = (word.reviewCountTyping || 0);
+            document.getElementById('detail-total').textContent = getReviewCountTotal(word);
+            
+            document.getElementById('detail-lastmodified').textContent = word.lastModified || 'Chưa cập nhật';
+            
+            const waitDays = getWaitingDays(word);
+            document.getElementById('detail-waitdays').textContent = `${waitDays} ngày`;
+            
+            let statusText = '';
+            if (word.isGraduated) {
+                statusText = '🎓 Tốt nghiệp (⭐⭐⭐)';
+            } else if (isWaitingGraduation(word)) {
+                statusText = `📚 Chờ tốt nghiệp (${word.stars || 0}⭐)`;
+            } else {
+                statusText = `🆕 Thường (${word.stars || 0}⭐)`;
+            }
+            document.getElementById('detail-status').textContent = statusText;
+            
+            document.getElementById('word-detail-modal').classList.remove('hidden');
+        }
+
+        function closeWordDetailModal() {
+            document.getElementById('word-detail-modal').classList.add('hidden');
+            detailingWordId = null;
+        }
+
+        function startEditInDetail() {
+            document.getElementById('detail-view-mode').classList.add('hidden');
+            document.getElementById('detail-edit-mode').classList.remove('hidden');
+            
+            const word = words.find(w => w.id === detailingWordId);
+            document.getElementById('detail-edit-dichnghia').value = word.dichnghia;
+            
+            setTimeout(() => {
+                document.getElementById('detail-edit-dichnghia').focus();
+            }, 100);
+        }
+
+        function cancelDetailEdit() {
+            document.getElementById('detail-view-mode').classList.remove('hidden');
+            document.getElementById('detail-edit-mode').classList.add('hidden');
+        }
+
+        function saveDetailEdit() {
+            const word = words.find(w => w.id === detailingWordId);
+            if (!word) return;
+            
+            const newDichnghia = document.getElementById('detail-edit-dichnghia').value.trim();
+            
+            if (!newDichnghia) {
+                alert('Vui lòng điền dịch nghĩa.');
+                return;
+            }
+            
+            word.dichnghia = newDichnghia;
+            word.lastModified = new Date().toISOString().split('T')[0];
+            saveData();
+            
+            cancelDetailEdit();
+            
+            document.getElementById('detail-dichnghia').textContent = escapeHTML(newDichnghia);
+            document.getElementById('detail-lastmodified').textContent = word.lastModified;
+            
+            renderManage();
+            renderHome();
+            
+            alert('Lưu thành công!');
+        }
+
+        function deleteWordInDetail() {
+            if (!confirm('Bạn chắc chắn muốn xoá từ này không?')) return;
+            
+            words = words.filter(w => w.id !== detailingWordId);
+            saveData();
+            
+            closeWordDetailModal();
+            renderManage();
+            renderHome();
+        }
+
+        // ========== MANAGE MODE ==========
 
         function renderManageInit() {
             const deckFilter = document.getElementById('deck-filter');
@@ -942,8 +1510,8 @@
 
             result.sort((a, b) => {
                 if (sort === 'word') return a.tuvung.localeCompare(b.tuvung, 'en');
-                if (sort === 'reviewAsc') return a.reviewCount - b.reviewCount;
-                if (sort === 'reviewDesc') return b.reviewCount - a.reviewCount;
+                if (sort === 'reviewAsc') return getReviewCountTotal(a) - getReviewCountTotal(b);
+                if (sort === 'reviewDesc') return getReviewCountTotal(b) - getReviewCountTotal(a);
                 if (sort === 'status') return Number(b.learned) - Number(a.learned);
                 return a.chude.localeCompare(b.chude, 'vi');
             });
@@ -1005,9 +1573,8 @@
                                     <tr>
                                         <th class="p-3">Từ vựng</th>
                                         <th class="p-3">Từ loại</th>
-                                        <th class="p-3">Nghĩa</th>
-                                        <th class="p-3">Ôn</th>
-                                        <th class="p-3">Hành động</th>
+                                        <th class="p-3">Dịch nghĩa</th>
+                                        <th class="p-3">Ghi chú</th>
                                     </tr>
                                 </thead>
 
@@ -1017,13 +1584,9 @@
                                             <td class="p-3 font-bold whitespace-nowrap">${escapeHTML(word.tuvung)}</td>
                                             <td class="p-3 text-sm text-slate-500 whitespace-nowrap">${escapeHTML(word.loaitu)}</td>
                                             <td class="p-3 text-sm">${escapeHTML(word.dichnghia)}</td>
-                                            <td class="p-3 text-center font-bold">${word.reviewCount}</td>
-                                            <td class="p-3 text-center space-x-2">
-                                                <button onclick="openEditWord('${word.id}')" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
-                                                    <i class="fa-solid fa-pen-to-square"></i>
-                                                </button>
-                                                <button onclick="deleteWord('${word.id}')" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
-                                                    <i class="fa-solid fa-trash"></i>
+                                            <td class="p-3 text-center">
+                                                <button onclick="openWordDetail('${word.id}')" class="text-blue-600 dark:text-blue-400 hover:text-blue-800" title="Xem chi tiết">
+                                                    <i class="fa-solid fa-info-circle"></i>
                                                 </button>
                                             </td>
                                         </tr>
@@ -1036,52 +1599,7 @@
             }).join('');
         }
 
-        function openEditWord(id) {
-            const word = words.find(w => w.id === id);
-            if (!word) return;
-
-            editingWordId = id;
-            document.getElementById('edit-chude').value = word.chude;
-            document.getElementById('edit-tuvung').value = word.tuvung;
-            document.getElementById('edit-loaitu').value = word.loaitu;
-            document.getElementById('edit-dichnghia').value = word.dichnghia;
-
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
-        function closeEditModal() {
-            document.getElementById('edit-modal').classList.add('hidden');
-            editingWordId = null;
-        }
-
-        function saveEditedWord() {
-            const word = words.find(w => w.id === editingWordId);
-            if (!word) return;
-
-            word.chude = document.getElementById('edit-chude').value.trim();
-            word.tuvung = document.getElementById('edit-tuvung').value.trim();
-            word.loaitu = document.getElementById('edit-loaitu').value.trim();
-            word.dichnghia = document.getElementById('edit-dichnghia').value.trim();
-
-            if (!word.chude || !word.tuvung || !word.loaitu || !word.dichnghia) {
-                alert('Vui lòng điền đầy đủ thông tin.');
-                return;
-            }
-
-            saveData();
-            closeEditModal();
-            renderManage();
-            renderHome();
-        }
-
-        function deleteWord(id) {
-            if (!confirm('Bạn chắc chắn muốn xoá từ này không?')) return;
-
-            words = words.filter(w => w.id !== id);
-            saveData();
-            renderManage();
-            renderHome();
-        }
+        // ========== IMPORT/EXPORT ==========
 
         function downloadExcelTemplate() {
             const data = [
@@ -1126,7 +1644,6 @@
                         }
 
                         const missing = [];
-
                         if (!chude) missing.push('chude');
                         if (!tuvung) missing.push('tuvung');
                         if (!loaitu) missing.push('loaitu');
@@ -1255,7 +1772,11 @@
                     loaitu: row.loaitu,
                     dichnghia: row.dichnghia,
                     learned: false,
-                    reviewCount: 0
+                    reviewCountQuiz: 0,
+                    reviewCountTyping: 0,
+                    stars: 0,
+                    lastModified: null,
+                    isGraduated: false,
                 });
 
                 added++;
@@ -1318,7 +1839,11 @@
                             loaitu: String(word.loaitu ?? word.tuloai ?? '').trim(),
                             dichnghia: String(word.dichnghia || '').trim(),
                             learned: Boolean(word.learned),
-                            reviewCount: Math.max(0, Number(word.reviewCount ?? word.review_count ?? 0))
+                            reviewCountQuiz: Math.max(0, Number(word.reviewCountQuiz ?? word.reviewCount ?? 0)),
+                            reviewCountTyping: Math.max(0, Number(word.reviewCountTyping ?? 0)),
+                            stars: Math.max(0, Math.min(3, Number(word.stars ?? 0))),
+                            lastModified: word.lastModified ? String(word.lastModified) : null,
+                            isGraduated: Boolean(word.isGraduated),
                         }))
                         .filter(word => word.chude && word.tuvung && word.loaitu && word.dichnghia);
 
@@ -1341,6 +1866,8 @@
 
             reader.readAsText(file);
         }
+
+        // ========== INIT ==========
 
         loadTheme();
         loadData();
