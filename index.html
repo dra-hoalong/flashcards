@@ -334,7 +334,10 @@
 
             <div class="grid grid-cols-2 gap-2">
                 <button onclick="backupData()" class="py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold"><i class="fa-solid fa-cloud-arrow-down mr-1"></i>Sao lưu</button>
-                <label class="py-3 rounded-xl bg-purple-600 text-white text-sm font-semibold text-center cursor-pointer"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>Khôi phục<input type="file" accept=".json" class="hidden" onchange="restoreData(event)"></label>
+                <label class="py-3 rounded-xl bg-purple-600 text-white text-sm font-semibold text-center cursor-pointer">
+                    <i class="fa-solid fa-cloud-arrow-up mr-1"></i>Khôi phục
+                    <input type="file" accept=".json,application/json,text/plain,*/*" class="hidden" onchange="restoreData(event)">
+                </label>
             </div>
 
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 mb-6 shadow-sm space-y-3">
@@ -2071,11 +2074,16 @@
         
             URL.revokeObjectURL(url);
         }
-        function restoreData(event) {
-            const file = event.target.files;
-            event.target.value = '';
         
-            if (!file) return;
+        function restoreData(event) {
+            const files = event.target.files;
+            if (!files || !files.length) return;
+        
+            // 1. SỬA CHUẨN: Lấy đối tượng File đầu tiên trong danh sách (thêm )
+            const selectedFile = files;
+            
+            // 2. Reset input
+            event.target.value = '';
         
             const reader = new FileReader();
         
@@ -2085,7 +2093,7 @@
                     const restored = Array.isArray(parsed) ? parsed : parsed.words;
         
                     if (!Array.isArray(restored)) {
-                        throw new Error('Dịnh dạng tệp sao lưu không hợp lệ.');
+                        throw new Error('Định dạng tệp sao lưu không hợp lệ.');
                     }
         
                     // Chuẩn hóa và lọc dữ liệu
@@ -2142,7 +2150,8 @@
                 }
             };
         
-            reader.readAsText(file);
+            // 3. Truyền đúng đối tượng File vào reader
+            reader.readAsText(selectedFile);
         }
 
         // ========== REPORT RENDERING FUNCTIONS ==========
