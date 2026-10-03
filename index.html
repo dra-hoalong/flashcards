@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flashcards Pro</title>
 
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Flashcards Pro">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -59,7 +67,12 @@
             <button onclick="goHome()" class="w-10 h-10 rounded-full bg-indigo-700 hover:bg-indigo-800 flex items-center justify-center">
                 <i class="fa-solid fa-house"></i>
             </button>
-            <h1 class="font-bold text-lg truncate">Dra_Hoalong's Flashcards</h1>
+            <div class="flex items-center gap-2 overflow-hidden">
+                <h1 class="font-bold text-lg truncate">Dra_Hoalong's Flashcards</h1>
+                <span id="pwa-status-badge" class="hidden text-xs bg-green-100 text-green-800 font-medium px-2 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 flex-shrink-0">
+                    <i class="fa-solid fa-wifi-slash mr-1"></i>Offline
+                </span>
+            </div>
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-indigo-700 hover:bg-indigo-800 flex items-center justify-center">
                 <i id="theme-icon" class="fa-solid fa-moon"></i>
             </button>
@@ -2038,7 +2051,7 @@
                 `Bỏ qua: ${skipped}`
             );
         }
-
+        
         function backupData() {
             const backup = {
                 app: 'Flashcards Pro',
@@ -2046,20 +2059,20 @@
                 exportedAt: new Date().toISOString(),
                 words
             };
-
+        
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
-
+        
             link.href = url;
-            link.download = `flashcards-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            // Sử dụng tên file cố định theo nguyên tắc sao lưu đơn giản
+            link.download = 'English_Vocabulary_Backup.json';
             link.click();
-
+        
             URL.revokeObjectURL(url);
         }
-
         function restoreData(event) {
-            const file = event.target.files; // ✅ Đã sửa: Lấy đúng file đầu tiên 
+            const file = event.target.files;
             event.target.value = '';
         
             if (!file) return;
@@ -2072,9 +2085,10 @@
                     const restored = Array.isArray(parsed) ? parsed : parsed.words;
         
                     if (!Array.isArray(restored)) {
-                        throw new Error('Invalid backup');
+                        throw new Error('Dịnh dạng tệp sao lưu không hợp lệ.');
                     }
         
+                    // Chuẩn hóa và lọc dữ liệu
                     const cleaned = restored
                         .map(word => ({
                             id: word.id || uid(),
@@ -2091,25 +2105,46 @@
                         }))
                         .filter(word => word.chude && word.tuvung && word.loaitu && word.dichnghia);
         
-                    if (!cleaned.length) throw new Error('Empty backup');
+                    if (!cleaned.length) throw new Error('File sao lưu rỗng.');
         
-                    if (!confirm(`Khôi phục ${cleaned.length} từ từ file sao lưu?\n\nDữ liệu hiện tại sẽ bị thay thế.`)) {
+                    // Thống kê dữ liệu sao lưu trước khi hiển thị xác nhận
+                    const total = cleaned.length;
+                    const learned = cleaned.filter(w => w.learned).length;
+                    const waiting = cleaned.filter(isWaitingGraduation).length;
+                    const graduated = cleaned.filter(w => w.isGraduated).length;
+                    const exportTime = parsed.exportedAt ? new Date(parsed.exportedAt).toLocaleString('vi-VN') : 'Không xác định';
+        
+                    const confirmMsg = 
+                        `📋 THÔNG TIN BẢN SAO LƯU:\n` +
+                        `-----------------------------------\n` +
+                        `• Thời gian tạo: ${exportTime}\n` +
+                        `• Tổng số từ: ${total}\n` +
+                        `• Đã học: ${learned}\n` +
+                        `• Chờ tốt nghiệp: ${waiting}\n` +
+                        `• Đã tốt nghiệp: ${graduated}\n\n` +
+                        `⚠️ CẢNH BÁO: Thao tác này sẽ GHI ĐÈ toàn bộ tiến trình hiện tại trên thiết bị này.\n` +
+                        `Bạn có muốn tiếp tục khôi phục?`;
+        
+                    if (!confirm(confirmMsg)) {
                         return;
                     }
         
+                    // Tiến hành ghi đè dữ liệu sau khi xác nhận
                     words = cleaned;
                     saveData();
                     renderHome();
                     renderManageInit();
         
-                    alert('Khôi phục dữ liệu thành công.');
+                    alert('✅ Khôi phục dữ liệu thành công!');
                 } catch (error) {
-                    alert('File sao lưu không hợp lệ, bị hỏng hoặc thiếu trường dữ liệu bắt buộc (loaitu).');
+                    alert('❌ Tệp sao lưu không hợp lệ hoặc bị hỏng. Dữ liệu hiện tại được giữ nguyên!');
+                    console.error(error);
                 }
             };
         
             reader.readAsText(file);
         }
+
         // ========== REPORT RENDERING FUNCTIONS ==========
     
         // 1. Màn hình Tiến độ / Hoàn thành HỌC FLASHCARD
@@ -2482,6 +2517,23 @@
                 `;
             }
         }
+        
+        // Đăng ký Service Worker cho PWA Offline
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                        // Hiển thị huy hiệu Offline khi đăng ký thành công
+                        const badge = document.getElementById('pwa-status-badge');
+                        if (badge) badge.classList.remove('hidden');
+                    })
+                    .catch(error => {
+                        console.error('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+    
         // ========== INIT ==========
 
         loadTheme();
