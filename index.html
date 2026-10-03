@@ -2079,11 +2079,8 @@
             const files = event.target.files;
             if (!files || !files.length) return;
         
-            // 1. SỬA CHUẨN: Lấy đối tượng File đầu tiên trong danh sách (thêm )
+            // 1. Lấy đúng đối tượng File đầu tiên bằng chỉ số 
             const selectedFile = files;
-            
-            // 2. Reset input
-            event.target.value = '';
         
             const reader = new FileReader();
         
@@ -2137,7 +2134,7 @@
                         return;
                     }
         
-                    // Tiến hành ghi đè dữ liệu sau khi xác nhận
+                    // Ghi đè dữ liệu sau khi xác nhận
                     words = cleaned;
                     saveData();
                     renderHome();
@@ -2150,8 +2147,11 @@
                 }
             };
         
-            // 3. Truyền đúng đối tượng File vào reader
+            // Đọc file
             reader.readAsText(selectedFile);
+        
+            // 2. Reset input value SAU KHI đã gọi lệnh đọc file
+            event.target.value = '';
         }
 
         // ========== REPORT RENDERING FUNCTIONS ==========
