@@ -618,6 +618,7 @@
         let importErrors = [];
         let studyList = [];
         let studyIndex = 0;
+        let sessionLearnedStudyIds = new Set();
         let reviewList = [];
         let reviewIndex = 0;
         let reviewMode = 'flashcard';
@@ -878,6 +879,7 @@
     
             studyList.sort(() => Math.random() - 0.5);
             studyIndex = 0;
+            sessionLearnedStudyIds = new Set();
             
             // Bổ sung: Lưu danh sách từ ban đầu & khởi chạy Timer
             sessionOriginalStudyList = [...studyList];
@@ -923,6 +925,7 @@
 
             if (original) {
                 original.learned = true;
+                sessionLearnedStudyIds.add(current.id);
                 saveData();
             }
 
@@ -1467,7 +1470,7 @@
                 }
             }
         
-            original.lastModified = new Date().toISOString().split('T'); // ✅ Lấy chuỗi YYYY-MM-DD
+            original.lastModified = new Date().toISOString().split('T')[0];
             saveData();
             
             moveToNextReview();
@@ -2088,39 +2091,40 @@
         
         // ========== KHÔI PHỤC DỮ LIỆU TỪ FILE EXCEL & GHI ĐÈ 100% ==========
         function restoreData(event) {
-            const files = event.target.files;
-            if (!files || !files.length) return;
-        
-            // Lấy đối tượng File đầu tiên
-            const selectedFile = files;
+            // 1. Lấy đúng tệp tin đầu tiên  y hệt handleExcelImport
+            const file = event.target.files[0];
             
-            // Reset giá trị input để cho phép chọn lại cùng 1 file nhiều lần
+            if (!file) {
+                return;
+            }
             event.target.value = '';
+        
+            if (!file) return;
         
             const reader = new FileReader();
         
             reader.onload = function(loadEvent) {
                 try {
-                    // Đọc dữ liệu mảng byte từ file Excel
-                    const data = new Uint8Array(loadEvent.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
+                    // 2. Đọc trực tiếp ArrayBuffer y hệt handleExcelImport
+                    const workbook = XLSX.read(loadEvent.target.result, { type: 'array' });
         
                     if (!workbook.SheetNames || !workbook.SheetNames.length) {
                         throw new Error('Tệp Excel rỗng hoặc không đúng cấu trúc.');
                     }
         
-                    const sheet = workbook.Sheets[workbook.SheetNames];
+                    // 3. Lấy đúng Sheet đầu tiên  y hệt handleExcelImport
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
         
                     if (!rows || !rows.length) {
                         throw new Error('Không tìm thấy dòng dữ liệu nào trong tệp Excel.');
                     }
         
-                    // Chuyển đổi dữ liệu từng dòng từ Excel về cấu trúc từ vựng chuẩn
+                    // 4. Chuyển đổi dữ liệu từng dòng từ Excel về cấu trúc từ vựng chuẩn
                     const cleaned = rows
                         .map(row => {
-                            const chude = String(row.chude || row['Chủ đề'] || row['chude'] || '').trim();
-                            const tuvung = String(row.tuvung || row['Từ vựng'] || row['tuvung'] || '').trim();
+                            const chude = String(row.chude || row['Chủ đề'] || '').trim();
+                            const tuvung = String(row.tuvung || row['Từ vựng'] || '').trim();
                             const loaitu = String(row.loaitu || row.tuloai || row['Loại từ'] || '').trim();
                             const dichnghia = String(row.dichnghia || row['Dịch nghĩa'] || row['Nghĩa'] || '').trim();
         
@@ -2156,27 +2160,27 @@
                         throw new Error('Không có dữ liệu hợp lệ (cần đủ: chủ đề, từ vựng, loại từ, dịch nghĩa).');
                     }
         
-                    // Thống kê nhanh dữ liệu từ tệp Excel
+                    // 5. Thống kê dữ liệu từ tệp Excel sao lưu
                     const total = cleaned.length;
-                    const learned = cleaned.filter(w => w.learned).length;
-                    const waiting = cleaned.filter(isWaitingGraduation).length;
-                    const graduated = cleaned.filter(w => w.isGraduated).length;
+                    const learnedCount = cleaned.filter(w => w.learned).length;
+                    const waitingCount = cleaned.filter(isWaitingGraduation).length;
+                    const graduatedCount = cleaned.filter(w => w.isGraduated).length;
         
                     const confirmMsg = 
                         `📋 BẢN SAO LƯU EXCEL:\n` +
                         `-----------------------------------\n` +
                         `• Tổng số từ vựng: ${total}\n` +
-                        `• Đã học: ${learned}\n` +
-                        `• Chờ tốt nghiệp: ${waiting}\n` +
-                        `• Đã tốt nghiệp: ${graduated}\n\n` +
-                        `⚠️️ CẢNH BÁO: Thao tác này sẽ GHI ĐÈ TOÀN BỘ ${words.length} từ vựng hiện tại trên thiết bị!\n` +
+                        `• Đã học: ${learnedCount}\n` +
+                        `• Chờ tốt nghiệp: ${waitingCount}\n` +
+                        `• Đã tốt nghiệp: ${graduatedCount}\n\n` +
+                        `⚠️ CẢNH BÁO: Thao tác này sẽ GHI ĐÈ TOÀN BỘ ${words.length} từ vựng hiện tại trên thiết bị!\n` +
                         `Bạn có chắc chắn muốn khôi phục?`;
         
                     if (!confirm(confirmMsg)) {
                         return;
                     }
         
-                    // GHI ĐÈ HOÀN TOÀN DỮ LIỆU ĐANG CÓ
+                    // 6. GHI ĐÈ HOÀN TOÀN DỮ LIỆU ĐANG CÓ
                     words = cleaned;
                     saveData();
                     renderHome();
@@ -2185,12 +2189,12 @@
                     alert('✅ Khôi phục thành công! Đã ghi đè toàn bộ dữ liệu từ tệp Excel sao lưu.');
                 } catch (error) {
                     alert('❌ Không thể khôi phục file Excel: ' + error.message);
-                    console.error(error);
+                    console.error('Lỗi khôi phục:', error);
                 }
             };
         
-            // Đọc file dạng ArrayBuffer
-            reader.readAsArrayBuffer(selectedFile);
+            // Đọc file dạng ArrayBuffer y hệt handleExcelImport
+            reader.readAsArrayBuffer(file);
         }
 
         // ========== REPORT RENDERING FUNCTIONS ==========
@@ -2199,7 +2203,7 @@
         function renderStudyReport(isCompleted) {
             const container = document.getElementById('study-report-content');
             const total = sessionOriginalStudyList.length;
-            const learnedCount = studyIndex;
+            const learnedCount = sessionLearnedStudyIds.size;
             const unlearnedCount = Math.max(0, total - learnedCount);
             const percent = total ? Math.round((learnedCount / total) * 100) : 0;
             const timeText = formatSessionTime(sessionElapsedSeconds);
