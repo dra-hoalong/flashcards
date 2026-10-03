@@ -333,10 +333,10 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="backupData()" class="py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold"><i class="fa-solid fa-cloud-arrow-down mr-1"></i>Sao lưu</button>
+                <button onclick="backupData()" class="py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold"><i class="fa-solid fa-file-excel mr-1"></i>Sao lưu Excel</button>
                 <label class="py-3 rounded-xl bg-purple-600 text-white text-sm font-semibold text-center cursor-pointer">
-                    <i class="fa-solid fa-cloud-arrow-up mr-1"></i>Khôi phục
-                    <input type="file" accept=".json,application/json,text/plain,*/*" class="hidden" onchange="restoreData(event)">
+                    <i class="fa-solid fa-cloud-arrow-up mr-1"></i>Khôi phục Excel
+                    <input type="file" accept=".xlsx,.xls" class="hidden" onchange="restoreData(event)">
                 </label>
             </div>
 
@@ -2055,103 +2055,142 @@
             );
         }
         
+         // ========== SAO LƯU DỮ LIỆU SANG FILE EXCEL (.XLSX) ==========
         function backupData() {
-            const backup = {
-                app: 'Flashcards Pro',
-                version: 7,
-                exportedAt: new Date().toISOString(),
-                words
-            };
+            if (!words || !words.length) {
+                alert('Chưa có dữ liệu từ vựng để sao lưu.');
+                return;
+            }
         
-            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
+            // Chuẩn hóa toàn bộ danh sách từ vựng kèm tất cả chỉ số tiến trình học
+            const exportData = words.map(word => ({
+                'chude': word.chude || 'Khác',
+                'tuvung': word.tuvung || '',
+                'loaitu': word.loaitu || '',
+                'dichnghia': word.dichnghia || '',
+                'learned': word.learned ? 1 : 0,
+                'reviewCountQuiz': word.reviewCountQuiz || 0,
+                'reviewCountTyping': word.reviewCountTyping || 0,
+                'stars': word.stars || 0,
+                'lastModified': word.lastModified || '',
+                'isGraduated': word.isGraduated ? 1 : 0,
+                'id': word.id || uid()
+            }));
         
-            link.href = url;
-            // Sử dụng tên file cố định theo nguyên tắc sao lưu đơn giản
-            link.download = 'English_Vocabulary_Backup.json';
-            link.click();
+            // Tạo Workbook và Sheet Excel
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Vocabulary_Backup');
         
-            URL.revokeObjectURL(url);
+            // Tải tệp Excel về thiết bị
+            XLSX.writeFile(workbook, 'English_Vocabulary_Backup.xlsx');
         }
         
+        // ========== KHÔI PHỤC DỮ LIỆU TỪ FILE EXCEL & GHI ĐÈ 100% ==========
         function restoreData(event) {
             const files = event.target.files;
             if (!files || !files.length) return;
         
-            // 1. Lấy đúng đối tượng File đầu tiên bằng chỉ số 
+            // Lấy đối tượng File đầu tiên
             const selectedFile = files;
+            
+            // Reset giá trị input để cho phép chọn lại cùng 1 file nhiều lần
+            event.target.value = '';
         
             const reader = new FileReader();
         
             reader.onload = function(loadEvent) {
                 try {
-                    const parsed = JSON.parse(loadEvent.target.result);
-                    const restored = Array.isArray(parsed) ? parsed : parsed.words;
+                    // Đọc dữ liệu mảng byte từ file Excel
+                    const data = new Uint8Array(loadEvent.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
         
-                    if (!Array.isArray(restored)) {
-                        throw new Error('Định dạng tệp sao lưu không hợp lệ.');
+                    if (!workbook.SheetNames || !workbook.SheetNames.length) {
+                        throw new Error('Tệp Excel rỗng hoặc không đúng cấu trúc.');
                     }
         
-                    // Chuẩn hóa và lọc dữ liệu
-                    const cleaned = restored
-                        .map(word => ({
-                            id: word.id || uid(),
-                            chude: String(word.chude || '').trim(),
-                            tuvung: String(word.tuvung || '').trim(),
-                            loaitu: String(word.loaitu ?? word.tuloai ?? '').trim(),
-                            dichnghia: String(word.dichnghia || '').trim(),
-                            learned: Boolean(word.learned),
-                            reviewCountQuiz: Number.isFinite(Number(word.reviewCountQuiz ?? word.reviewCount)) ? Number(word.reviewCountQuiz ?? word.reviewCount) : 0,
-                            reviewCountTyping: Number.isFinite(Number(word.reviewCountTyping)) ? Number(word.reviewCountTyping) : 0,
-                            stars: Math.max(0, Math.min(3, Number(word.stars ?? 0))),
-                            lastModified: word.lastModified ? String(word.lastModified) : null,
-                            isGraduated: Boolean(word.isGraduated),
-                        }))
+                    const sheet = workbook.Sheets[workbook.SheetNames];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        
+                    if (!rows || !rows.length) {
+                        throw new Error('Không tìm thấy dòng dữ liệu nào trong tệp Excel.');
+                    }
+        
+                    // Chuyển đổi dữ liệu từng dòng từ Excel về cấu trúc từ vựng chuẩn
+                    const cleaned = rows
+                        .map(row => {
+                            const chude = String(row.chude || row['Chủ đề'] || row['chude'] || '').trim();
+                            const tuvung = String(row.tuvung || row['Từ vựng'] || row['tuvung'] || '').trim();
+                            const loaitu = String(row.loaitu || row.tuloai || row['Loại từ'] || '').trim();
+                            const dichnghia = String(row.dichnghia || row['Dịch nghĩa'] || row['Nghĩa'] || '').trim();
+        
+                            // Xử lý cờ boolean và số liệu tiến trình
+                            const learnedRaw = row.learned ?? row['Đã học'];
+                            const learned = (learnedRaw === 1 || learnedRaw === '1' || learnedRaw === true || String(learnedRaw).toLowerCase() === 'true');
+        
+                            const isGraduatedRaw = row.isGraduated ?? row['Tốt nghiệp'];
+                            const isGraduated = (isGraduatedRaw === 1 || isGraduatedRaw === '1' || isGraduatedRaw === true || String(isGraduatedRaw).toLowerCase() === 'true');
+        
+                            const reviewCountQuiz = Number.isFinite(Number(row.reviewCountQuiz)) ? Number(row.reviewCountQuiz) : 0;
+                            const reviewCountTyping = Number.isFinite(Number(row.reviewCountTyping)) ? Number(row.reviewCountTyping) : 0;
+                            const stars = Math.max(0, Math.min(3, Number.isFinite(Number(row.stars)) ? Number(row.stars) : 0));
+                            const lastModified = row.lastModified ? String(row.lastModified).trim() : null;
+        
+                            return {
+                                id: row.id ? String(row.id) : uid(),
+                                chude,
+                                tuvung,
+                                loaitu,
+                                dichnghia,
+                                learned,
+                                reviewCountQuiz,
+                                reviewCountTyping,
+                                stars,
+                                lastModified,
+                                isGraduated
+                            };
+                        })
                         .filter(word => word.chude && word.tuvung && word.loaitu && word.dichnghia);
         
-                    if (!cleaned.length) throw new Error('File sao lưu rỗng.');
+                    if (!cleaned.length) {
+                        throw new Error('Không có dữ liệu hợp lệ (cần đủ: chủ đề, từ vựng, loại từ, dịch nghĩa).');
+                    }
         
-                    // Thống kê dữ liệu sao lưu trước khi hiển thị xác nhận
+                    // Thống kê nhanh dữ liệu từ tệp Excel
                     const total = cleaned.length;
                     const learned = cleaned.filter(w => w.learned).length;
                     const waiting = cleaned.filter(isWaitingGraduation).length;
                     const graduated = cleaned.filter(w => w.isGraduated).length;
-                    const exportTime = parsed.exportedAt ? new Date(parsed.exportedAt).toLocaleString('vi-VN') : 'Không xác định';
         
                     const confirmMsg = 
-                        `📋 THÔNG TIN BẢN SAO LƯU:\n` +
+                        `📋 BẢN SAO LƯU EXCEL:\n` +
                         `-----------------------------------\n` +
-                        `• Thời gian tạo: ${exportTime}\n` +
-                        `• Tổng số từ: ${total}\n` +
+                        `• Tổng số từ vựng: ${total}\n` +
                         `• Đã học: ${learned}\n` +
                         `• Chờ tốt nghiệp: ${waiting}\n` +
                         `• Đã tốt nghiệp: ${graduated}\n\n` +
-                        `⚠️ CẢNH BÁO: Thao tác này sẽ GHI ĐÈ toàn bộ tiến trình hiện tại trên thiết bị này.\n` +
-                        `Bạn có muốn tiếp tục khôi phục?`;
+                        `⚠️️ CẢNH BÁO: Thao tác này sẽ GHI ĐÈ TOÀN BỘ ${words.length} từ vựng hiện tại trên thiết bị!\n` +
+                        `Bạn có chắc chắn muốn khôi phục?`;
         
                     if (!confirm(confirmMsg)) {
                         return;
                     }
         
-                    // Ghi đè dữ liệu sau khi xác nhận
+                    // GHI ĐÈ HOÀN TOÀN DỮ LIỆU ĐANG CÓ
                     words = cleaned;
                     saveData();
                     renderHome();
                     renderManageInit();
         
-                    alert('✅ Khôi phục dữ liệu thành công!');
+                    alert('✅ Khôi phục thành công! Đã ghi đè toàn bộ dữ liệu từ tệp Excel sao lưu.');
                 } catch (error) {
-                    alert('❌ Tệp sao lưu không hợp lệ hoặc bị hỏng. Dữ liệu hiện tại được giữ nguyên!');
+                    alert('❌ Không thể khôi phục file Excel: ' + error.message);
                     console.error(error);
                 }
             };
         
-            // Đọc file
-            reader.readAsText(selectedFile);
-        
-            // 2. Reset input value SAU KHI đã gọi lệnh đọc file
-            event.target.value = '';
+            // Đọc file dạng ArrayBuffer
+            reader.readAsArrayBuffer(selectedFile);
         }
 
         // ========== REPORT RENDERING FUNCTIONS ==========
