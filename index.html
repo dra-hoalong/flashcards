@@ -324,29 +324,74 @@
                 <label class="py-3 rounded-xl bg-purple-600 text-white text-sm font-semibold text-center cursor-pointer"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>Khôi phục<input type="file" accept=".json" class="hidden" onchange="restoreData(event)"></label>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-3">
-                <input id="search-input" oninput="renderManage()" placeholder="Tìm từ, nghĩa hoặc tên bộ thẻ..." class="w-full border rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-
-                <div class="grid grid-cols-3 gap-2">
-                    <select id="deck-filter" onchange="renderManage()" class="border rounded-xl px-2 py-2 text-sm bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-                        <option value="">Tất cả bộ</option>
-                    </select>
-
-                    <select id="status-filter" onchange="renderManage()" class="border rounded-xl px-2 py-2 text-sm bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="learned">Đã học</option>
-                        <option value="unlearned">Chưa học</option>
-                    </select>
-
-                    <select id="sort-select" onchange="renderManage()" class="border rounded-xl px-2 py-2 text-sm bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-                        <option value="deck">Theo bộ thẻ</option>
-                        <option value="word">A-Z từ</option>
-                        <option value="reviewAsc">Ôn thấp trước</option>
-                        <option value="reviewDesc">Ôn cao trước</option>
-                        <option value="status">Theo trạng thái</option>
-                    </select>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 mb-6 shadow-sm space-y-3">
+              
+              <!-- HÀNG 1: Thanh tìm kiếm riêng biệt ở phía trên (Full width) -->
+              <div>
+                <input type="text" id="search-input" oninput="renderManage()" placeholder="Tìm từ, nghĩa hoặc tên bộ..." 
+                       class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+            
+              <!-- HÀNG 2: 3 bộ lọc nằm ngang phía dưới (Chia 3 cột) -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                
+                <!-- 1. Dropdown Lọc Bộ thẻ (Chọn nhiều) -->
+                <div class="relative inline-block w-full">
+                  <button type="button" onclick="toggleDropdown('deck-dropdown-menu')" 
+                          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-left flex justify-between items-center text-slate-800 dark:text-slate-100">
+                    <span id="deck-dropdown-label" class="truncate">Tất cả bộ thẻ</span>
+                    <i class="fa-solid fa-chevron-down text-xs ml-2 text-slate-400"></i>
+                  </button>
+                  <div id="deck-dropdown-menu" class="hidden absolute z-30 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-xl max-h-60 overflow-y-auto">
+                    <!-- Nạp tự động qua JS -->
+                  </div>
                 </div>
+            
+                <!-- 2. Dropdown Lọc Trạng thái (Chọn nhiều) -->
+                <div class="relative inline-block w-full">
+                  <button type="button" onclick="toggleDropdown('status-dropdown-menu')" 
+                          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-left flex justify-between items-center text-slate-800 dark:text-slate-100">
+                    <span id="status-dropdown-label" class="truncate">Tất cả trạng thái</span>
+                    <i class="fa-solid fa-chevron-down text-xs ml-2 text-slate-400"></i>
+                  </button>
+                  <div id="status-dropdown-menu" class="hidden absolute z-30 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-xl space-y-2">
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                      <input type="checkbox" value="all" onchange="handleStatusChange(this)" checked class="rounded text-indigo-600 focus:ring-indigo-500 status-ckb">
+                      <span class="font-medium">Tất cả trạng thái</span>
+                    </label>
+                    <hr class="border-slate-100 dark:border-slate-700 my-1">
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                      <input type="checkbox" value="chua_hoc" onchange="handleStatusChange(this)" class="rounded text-indigo-600 focus:ring-indigo-500 status-ckb">
+                      <span>Chưa học</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                      <input type="checkbox" value="da_hoc" onchange="handleStatusChange(this)" class="rounded text-indigo-600 focus:ring-indigo-500 status-ckb">
+                      <span>Đã học</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                      <input type="checkbox" value="cho_tot_nghiep" onchange="handleStatusChange(this)" class="rounded text-indigo-600 focus:ring-indigo-500 status-ckb">
+                      <span>Chờ tốt nghiệp</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                      <input type="checkbox" value="tot_nghiep" onchange="handleStatusChange(this)" class="rounded text-indigo-600 focus:ring-indigo-500 status-ckb">
+                      <span>Tốt nghiệp</span>
+                    </label>
+                  </div>
+                </div>
+            
+                <!-- 3. Dropdown Sắp xếp (8 tiêu chí) -->
+                <select id="sort-select" onchange="renderManage()" 
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="default">Mặc định</option>
+                  <option value="review_asc">Ôn thấp trước</option>
+                  <option value="review_desc">Ôn cao trước</option>
+                  <option value="grad_first">Chờ tốt nghiệp trước</option>
+                  <option value="grad_last">Chờ tốt nghiệp sau</option>
+                </select>
+            
+              </div>
             </div>
+
 
             <div id="deck-list" class="space-y-3"></div>
         </section>
@@ -533,6 +578,20 @@
             </div>
         </div>
 
+        <!-- SCREEN: REPORT HỌC FLASHCARD (DỞ DANG / HOÀN THÀNH) -->
+        <section id="screen-study-report" class="app-screen space-y-5">
+            <div id="study-report-content" class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 space-y-4">
+                <!-- Nội dung sẽ nạp tự động bằng JS -->
+            </div>
+        </section>
+    
+        <!-- SCREEN: REPORT ÔN TẬP / NÂNG SAO / REVIEW (DỞ DANG / HOÀN THÀNH) -->
+        <section id="screen-review-report" class="app-screen space-y-5">
+            <div id="review-report-content" class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 space-y-4">
+                <!-- Nội dung sẽ nạp tự động bằng JS -->
+            </div>
+        </section>
+        
     </main>
 
     <script>
@@ -547,11 +606,58 @@
         let reviewIndex = 0;
         let reviewMode = 'flashcard';
         let reviewLocked = false;
+        let isRetryPhase = false;
         let retryQueue = [];
-        let hasBeenDeducted = {};
-        let editingWordId = null;
         let detailingWordId = null;
         let upgradeTestModes = {}; // Lưu hình thức thi (quiz/typing) cho mỗi từ trong chế độ nâng cấp
+        let selectedDecks = ['all'];        // Lưu các bộ thẻ được chọn
+        let selectedStatuses = ['all'];     // Lưu các trạng thái được chọn
+        let lastAlphaDirection = 'asc';    // Lưu hướng chữ cái gần nhất ('asc' hoặc 'desc')
+        // ========== SESSION & TIMER STATE (BỔ SUNG) ==========
+        let sessionElapsedSeconds = 0;
+        let sessionTimerInterval = null;
+        let sessionInitialStarsMap = {};     // Lưu số sao ban đầu của các từ khi bắt đầu phiên
+        let sessionOriginalStudyList = [];   // Lưu danh sách từ ban đầu trong phiên học
+        let sessionOriginalReviewList = [];  // Lưu danh sách từ ban đầu trong phiên ôn
+    
+        // Hàm đếm thời gian
+        function startSessionTimer() {
+            stopSessionTimer();
+            sessionElapsedSeconds = 0;
+            sessionTimerInterval = setInterval(() => {
+                sessionElapsedSeconds++;
+            }, 1000);
+        }
+    
+        function pauseSessionTimer() {
+            if (sessionTimerInterval) {
+                clearInterval(sessionTimerInterval);
+                sessionTimerInterval = null;
+            }
+        }
+    
+        function resumeSessionTimer() {
+            if (!sessionTimerInterval) {
+                sessionTimerInterval = setInterval(() => {
+                    sessionElapsedSeconds++;
+                }, 1000);
+            }
+        }
+    
+        function stopSessionTimer() {
+            if (sessionTimerInterval) {
+                clearInterval(sessionTimerInterval);
+                sessionTimerInterval = null;
+            }
+        }
+    
+        function formatSessionTime(totalSeconds) {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            const mm = String(mins).padStart(2, '0');
+            const ss = String(secs).padStart(2, '0');
+            return `${mm} phút ${ss} giây`;
+        }
 
         // ========== UTILITY FUNCTIONS ==========
 
@@ -591,9 +697,11 @@
 
         function getWaitingDays(word) {
             if (!word.lastModified) return 0;
-            const last = new Date(word.lastModified);
+            const last = new Date(word.lastModified + 'T00:00:00'); // Ép về giờ địa phương
             const today = new Date();
-            return Math.floor((today - last) / (1000 * 60 * 60 * 24));
+            today.setHours(0, 0, 0, 0); // Đưa today về mốc 00:00:00 địa phương
+            const diff = Math.floor((today - last) / (1000 * 60 * 60 * 24));
+            return Math.max(0, diff);
         }
 
         // ========== DATA FUNCTIONS ==========
@@ -702,18 +810,35 @@
 
 
         // ========== STUDY MODE ==========
-
         function renderStudyDecks() {
             const select = document.getElementById('study-decks');
-            const decks = getDecks();
-
-            select.innerHTML = decks.length
-                ? decks.map(deck => `<option value="${escapeHTML(deck)}">${escapeHTML(deck)}</option>`).join('')
-                : '<option disabled>Chưa có bộ thẻ</option>';
+            if (!select) return;
+        
+            // 1. Lấy tất cả các bộ thẻ hiện có trong kho từ vựng
+            const allDecks = getDecks();
+        
+            // 2. Lọc chỉ lấy các bộ thẻ CÒN TỪ CHƯA HỌC
+            const availableDecks = allDecks.filter(deckName => {
+                const deckWords = words.filter(w => w.chude === deckName);
+                const unlearnedCount = deckWords.filter(w => !w.learned).length;
+                return unlearnedCount > 0;
+            });
+        
+            // 3. Nếu tất cả các bộ thẻ đã học xong 100%
+            if (availableDecks.length === 0) {
+                select.innerHTML = '<option disabled selected>🎉 Tất cả các bộ thẻ đều đã học xong 100%!</option>';
+                return;
+            }
+        
+            // 4. Render danh sách các bộ thẻ khả dụng
+            select.innerHTML = availableDecks.map(deck => 
+                `<option value="${escapeHTML(deck)}">${escapeHTML(deck)}</option>`
+            ).join('');
         }
 
         function selectAllStudyDecks() {
-            document.querySelectorAll('#study-decks option').forEach(option => option.selected = true);
+            // Chỉ chọn các option không bị disabled
+            document.querySelectorAll('#study-decks option:not(:disabled)').forEach(option => option.selected = true);
         }
 
         function selectedStudyDecks() {
@@ -722,21 +847,26 @@
 
         function startStudy() {
             const selectedDecks = selectedStudyDecks();
-
+    
             if (!selectedDecks.length) {
                 alert('Vui lòng chọn ít nhất một bộ thẻ.');
                 return;
             }
-
+    
             studyList = words.filter(word => selectedDecks.includes(word.chude) && !word.learned);
-
+    
             if (!studyList.length) {
                 alert('Các bộ thẻ đã chọn không còn từ chưa học.');
                 return;
             }
-
+    
             studyList.sort(() => Math.random() - 0.5);
             studyIndex = 0;
+            
+            // Bổ sung: Lưu danh sách từ ban đầu & khởi chạy Timer
+            sessionOriginalStudyList = [...studyList];
+            startSessionTimer();
+    
             navigate('study-run');
             renderStudyCard();
         }
@@ -797,18 +927,18 @@
         function moveToNextStudyCard() {
             studyIndex++;
             if (studyIndex >= studyList.length) {
-                alert('Bạn đã hoàn thành phiên học.');
-                renderHome();
-                navigate('home');
+                // Khi hoàn thành 100% -> Chuyển sang màn hình Báo cáo Hoàn thành
+                pauseSessionTimer();
+                renderStudyReport(true);
                 return;
             }
             renderStudyCard();
         }
-
+    
         function endStudy() {
-            if (confirm('Bạn có chắc muốn kết thúc phiên học không?')) {
-                navigate('home');
-            }
+            // Dừng giữa chừng -> Tạm dừng timer & hiển thị màn hình Tiến độ Dở dang
+            pauseSessionTimer();
+            renderStudyReport(false);
         }
 
         // ========== REVIEW MODE - SELECTION ==========
@@ -955,37 +1085,19 @@
             
             let eligible = getEligibleReviewWords(mode);
             
-            // Sắp xếp theo loại chế độ
             if (mode === 'quiz') {
-                eligible.sort((a, b) => {
-                    const diff = (a.reviewCountQuiz || 0) - (b.reviewCountQuiz || 0);
-                    return diff || Math.random() - 0.5;
-                });
-            } 
-            else if (mode === 'typing') {
-                eligible.sort((a, b) => {
-                    const diff = (a.reviewCountTyping || 0) - (b.reviewCountTyping || 0);
-                    return diff || Math.random() - 0.5;
-                });
-            } 
-            else if (mode === 'flashcard') {
-                eligible.sort((a, b) => {
-                    const diff = getReviewCountTotal(a) - getReviewCountTotal(b);
-                    return diff || Math.random() - 0.5;
-                });
-            }
-            else if (mode === 'upgrade') {
-                // Sắp xếp random cho nâng cấp sao
+                eligible.sort((a, b) => (a.reviewCountQuiz || 0) - (b.reviewCountQuiz || 0) || Math.random() - 0.5);
+            } else if (mode === 'typing') {
+                eligible.sort((a, b) => (a.reviewCountTyping || 0) - (b.reviewCountTyping || 0) || Math.random() - 0.5);
+            } else if (mode === 'flashcard') {
+                eligible.sort((a, b) => getReviewCountTotal(a) - getReviewCountTotal(b) || Math.random() - 0.5);
+            } else if (mode === 'upgrade') {
                 eligible.sort(() => Math.random() - 0.5);
-                
-                // Gán hình thức thi ngẫu nhiên cho mỗi từ: quiz hoặc typing
                 upgradeTestModes = {};
                 eligible.forEach(word => {
                     upgradeTestModes[word.id] = Math.random() < 0.5 ? 'quiz' : 'typing';
                 });
-            }
-            else if (mode === 'graduated') {
-                // Review tốt nghiệp: random
+            } else if (mode === 'graduated') {
                 eligible.sort(() => Math.random() - 0.5);
             }
             
@@ -996,8 +1108,16 @@
             reviewIndex = 0;
             reviewLocked = false;
             retryQueue = [];
-            hasBeenDeducted = {};
-            
+            isRetryPhase = false;
+    
+            // Bổ sung: Lưu vết sao ban đầu & Khởi tạo Timer
+            sessionOriginalReviewList = [...reviewList];
+            sessionInitialStarsMap = {};
+            reviewList.forEach(w => {
+                sessionInitialStarsMap[w.id] = w.stars || 0;
+            });
+            startSessionTimer();
+    
             const titles = {
                 flashcard: 'Ôn tập Flashcard',
                 quiz: 'Trắc nghiệm',
@@ -1010,6 +1130,7 @@
             navigate('review-run');
             renderReview();
         }
+
 
         // ========== REVIEW MODE - EXECUTION (PHẦN 2 - SẼ TIẾP THEO) ==========
 
@@ -1082,16 +1203,25 @@
 
         function uniqueQuizOptions(word) {
             const values = new Set([word.dichnghia]);
-
+        
+            // Lấy thêm nghĩa từ tất cả các từ khác trong kho (không phân biệt bộ thẻ)
             words
-                .filter(other => other.learned && other.id !== word.id)
+                .filter(other => other.id !== word.id && other.dichnghia)
                 .sort(() => Math.random() - 0.5)
                 .forEach(other => {
                     if (values.size < 4) values.add(other.dichnghia);
                 });
-
+        
+            // Trường hợp toàn bộ ứng dụng có ít hơn 4 từ, bổ sung đáp án mặc định
+            const fallbacks = ['Khác', 'Không có trong danh sách', 'Chưa xác định', 'Tùy chọn khác'];
+            let idx = 0;
+            while (values.size < 4 && idx < fallbacks.length) {
+                values.add(fallbacks[idx++]);
+            }
+        
             return [...values].sort(() => Math.random() - 0.5);
         }
+
 
         function renderQuiz(word) {
             const options = uniqueQuizOptions(word);
@@ -1185,7 +1315,7 @@
 
         function handleCharInput(event, input, index, total) {
             const inputs = [...document.querySelectorAll('.char-input')];
-
+        
             if (event.type === 'keydown') {
                 if (event.key === 'Backspace') {
                     event.preventDefault();
@@ -1196,39 +1326,25 @@
                     }
                     return;
                 }
-
+        
                 if (event.key === 'ArrowLeft' && index > 0) {
                     event.preventDefault();
                     inputs[index - 1].focus();
                     return;
                 }
-
+        
                 if (event.key === 'ArrowRight' && index < total - 1) {
                     event.preventDefault();
                     inputs[index + 1].focus();
                     return;
                 }
-
-                if (event.key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey) {
-                    return;
-                }
-
-                event.preventDefault();
-
-                let char = event.key.toLowerCase();
-                input.value = char;
-
-                if (index < total - 1) {
-                    inputs[index + 1].focus();
-                }
-                return;
             }
-
+        
             if (event.type === 'input') {
-                let value = input.value.toLowerCase();
-                value = value.replace(/[^a-z\s'-]/g, '').slice(-1);
+                // Cho phép ký tự a-z, dấu cách và dấu gạch nối
+                let value = input.value.toLowerCase().replace(/[^a-z -]/g, '').slice(-1);
                 input.value = value;
-
+            
                 if (value && index < total - 1) {
                     inputs[index + 1].focus();
                 }
@@ -1285,63 +1401,60 @@
                 return;
             }
             
-            if (reviewMode === 'flashcard') {
-                // Flashcard: không tính reviewCount
+            // Bỏ qua cập nhật dữ liệu đối với chế độ Flashcard và Review tốt nghiệp
+            if (reviewMode === 'flashcard' || reviewMode === 'graduated') {
                 moveToNextReview();
-            } 
-            else if (reviewMode === 'quiz') {
-                if (isCorrect) {
-                    original.reviewCountQuiz += 1;
-                    original.lastModified = new Date().toISOString().split('T')[0];
-                    saveData();
+                return;
+            }
+        
+            // Nếu ĐANG ở trong giai đoạn ôn lại từ sai (retryPhase): KHÔNG cộng/trừ reviewCount
+            if (isRetryPhase) {
+                if (!isCorrect) {
+                    retryQueue.push(current);
                 }
                 moveToNextReview();
+                return;
+            }
+        
+            // LẦN ĐẦU LÀM BÀI trong phiên
+            if (reviewMode === 'quiz') {
+                if (isCorrect) {
+                    original.reviewCountQuiz += 1;
+                } else {
+                    original.reviewCountQuiz -= 1;
+                    retryQueue.push(current);
+                }
             } 
             else if (reviewMode === 'typing') {
                 if (isCorrect) {
                     original.reviewCountTyping += 1;
-                    original.lastModified = new Date().toISOString().split('T')[0];
-                    saveData();
+                } else {
+                    original.reviewCountTyping -= 1;
+                    retryQueue.push(current);
                 }
-                moveToNextReview();
             }
             else if (reviewMode === 'upgrade') {
-                // Nâng cấp sao: cộng/trừ sao
+                const testMode = upgradeTestModes[original.id];
                 if (isCorrect) {
                     original.stars = Math.min(3, (original.stars || 0) + 1);
+                    if (original.stars === 3) original.isGraduated = true;
                     
-                    // Nếu đạt 3 sao -> tốt nghiệp
-                    if (original.stars === 3) {
-                        original.isGraduated = true;
-                    }
-                    
-                    // Cộng reviewCount tương ứng
-                    const testMode = upgradeTestModes[original.id];
-                    if (testMode === 'quiz') {
-                        original.reviewCountQuiz += 1;
-                    } else {
-                        original.reviewCountTyping += 1;
-                    }
+                    if (testMode === 'quiz') original.reviewCountQuiz += 1;
+                    else original.reviewCountTyping += 1;
                 } else {
                     original.stars = Math.max(0, (original.stars || 0) - 1);
                     
-                    // Trừ reviewCount tương ứng
-                    const testMode = upgradeTestModes[original.id];
-                    if (testMode === 'quiz') {
-                        original.reviewCountQuiz -= 1;
-                    } else {
-                        original.reviewCountTyping -= 1;
-                    }
+                    if (testMode === 'quiz') original.reviewCountQuiz -= 1;
+                    else original.reviewCountTyping -= 1;
+                    
+                    retryQueue.push(current);
                 }
-                
-                original.lastModified = new Date().toISOString().split('T')[0];
-                saveData();
-                moveToNextReview();
             }
-            else if (reviewMode === 'graduated') {
-                // Review tốt nghiệp: không tính gì
-                moveToNextReview();
-            }
+        
+            original.lastModified = new Date().toISOString().split('T'); // ✅ Lấy chuỗi YYYY-MM-DD
+            saveData();
+            
+            moveToNextReview();
         }
 
         function moveToNextReview() {
@@ -1352,6 +1465,7 @@
                     reviewList = retryQueue.sort(() => Math.random() - 0.5);
                     retryQueue = [];
                     reviewIndex = 0;
+                    isRetryPhase = true; // ❌ BẮT BUỘC BỔ SUNG: Bật cờ đánh dấu bắt đầu giai đoạn retry
                 } else {
                     showReviewCompletionScreen();
                     return;
@@ -1362,24 +1476,17 @@
         }
 
         function showReviewCompletionScreen() {
-            const modeNames = {
-                flashcard: 'Ôn tập Flashcard',
-                quiz: 'Trắc nghiệm',
-                typing: 'Tự luận',
-                upgrade: 'Nâng cấp sao',
-                graduated: 'Review tốt nghiệp'
-            };
-            
-            alert(`Bạn đã hoàn thành phiên ${modeNames[reviewMode].toLowerCase()}.`);
-            renderHome();
-            navigate('home');
+            // Khi ôn xong 100% -> Hiện màn hình Báo cáo Hoàn thành
+            pauseSessionTimer();
+            renderReviewReport(true);
         }
 
         function endReview() {
-            if (confirm('Bạn có chắc muốn kết thúc phiên ôn không?')) {
-                navigate('home');
-            }
+            // Kết thúc giữa chừng -> Hiện màn hình Báo cáo Tiến độ Ôn dở dang
+            pauseSessionTimer();
+            renderReviewReport(false);
         }
+
 
         // ========== WORD DETAIL MODAL ==========
 
@@ -1392,10 +1499,10 @@
             document.getElementById('detail-view-mode').classList.remove('hidden');
             document.getElementById('detail-edit-mode').classList.add('hidden');
             
-            document.getElementById('detail-chude').textContent = escapeHTML(word.chude);
-            document.getElementById('detail-tuvung').textContent = escapeHTML(word.tuvung);
-            document.getElementById('detail-loaitu').textContent = escapeHTML(word.loaitu);
-            document.getElementById('detail-dichnghia').textContent = escapeHTML(word.dichnghia);
+            document.getElementById('detail-chude').textContent = word.chude;
+            document.getElementById('detail-tuvung').textContent = word.tuvung;
+            document.getElementById('detail-loaitu').textContent = word.loaitu;
+            document.getElementById('detail-dichnghia').textContent = word.dichnghia;
             
             document.getElementById('detail-learned').textContent = word.learned ? '✅ Đã học' : '⏳ Chưa học';
             
@@ -1460,7 +1567,7 @@
             
             cancelDetailEdit();
             
-            document.getElementById('detail-dichnghia').textContent = escapeHTML(newDichnghia);
+            document.getElementById('detail-dichnghia').textContent = newDichnghia;
             document.getElementById('detail-lastmodified').textContent = word.lastModified;
             
             renderManage();
@@ -1483,49 +1590,109 @@
         // ========== MANAGE MODE ==========
 
         function renderManageInit() {
-            const deckFilter = document.getElementById('deck-filter');
-            const decks = getDecks();
-
-            deckFilter.innerHTML = `<option value="">Tất cả bộ</option>` +
-                decks.map(d => `<option value="${escapeHTML(d)}">${escapeHTML(d)}</option>`).join('');
-
+            const decks = [...new Set(words.map(w => w.chude))].filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi'));
+            const container = document.getElementById('deck-dropdown-menu');
+            
+            let html = `
+                <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                  <input type="checkbox" value="all" onchange="handleDeckChange(this)" checked class="rounded text-indigo-600 focus:ring-indigo-500 deck-ckb">
+                  <span class="font-medium">Tất cả bộ thẻ</span>
+                </label>
+                <hr class="border-slate-100 dark:border-slate-700 my-1">
+            `;
+            
+            decks.forEach(deck => {
+                html += `
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer py-0.5">
+                      <input type="checkbox" value="${escapeHTML(deck)}" onchange="handleDeckChange(this)" checked class="rounded text-indigo-600 focus:ring-indigo-500 deck-ckb">
+                      <span class="truncate">${escapeHTML(deck)}</span>
+                    </label>
+                `;
+            });
+            
+            container.innerHTML = html;
+            selectedDecks = ['all'];
+            selectedStatuses = ['all'];
             renderManage();
         }
 
-        function getFilteredWords() {
-            const search = normalize(document.getElementById('search-input')?.value || '');
-            const deckFilter = document.getElementById('deck-filter')?.value || '';
-            const status = document.getElementById('status-filter')?.value || '';
-            const sort = document.getElementById('sort-select')?.value || 'deck';
-
-            let result = words.filter(word => {
-                const matchesSearch =
-                    !search ||
-                    normalize(word.chude).includes(search) ||
-                    normalize(word.tuvung).includes(search) ||
-                    normalize(word.dichnghia).includes(search) ||
-                    normalize(word.loaitu).includes(search);
-
-                const matchesDeck = !deckFilter || word.chude === deckFilter;
-
-                const matchesStatus =
-                    !status ||
-                    (status === 'learned' && word.learned) ||
-                    (status === 'unlearned' && !word.learned);
-
-                return matchesSearch && matchesDeck && matchesStatus;
-            });
-
-            result.sort((a, b) => {
-                if (sort === 'word') return a.tuvung.localeCompare(b.tuvung, 'en');
-                if (sort === 'reviewAsc') return getReviewCountTotal(a) - getReviewCountTotal(b);
-                if (sort === 'reviewDesc') return getReviewCountTotal(b) - getReviewCountTotal(a);
-                if (sort === 'status') return Number(b.learned) - Number(a.learned);
-                return a.chude.localeCompare(b.chude, 'vi');
-            });
-
-            return result;
+        // Phân loại từ vựng vào đúng 1 trong 4 nhóm trạng thái tách biệt
+        function getWordStatusKey(word) {
+            if (word.isGraduated) return 'tot_nghiep';
+            if (isWaitingGraduation(word)) return 'cho_tot_nghiep';
+            if (word.learned) return 'da_hoc';
+            return 'chua_hoc';
         }
+        
+        function getFilteredWords() {
+            const query = normalize(document.getElementById('search-input')?.value || '');
+            const sortVal = document.getElementById('sort-select')?.value || 'default';
+        
+            // 1. LỌC DỮ LIỆU (Theo từ khóa, bộ thẻ và trạng thái)
+            let filtered = words.filter(word => {
+                const matchQuery = !query || 
+                    normalize(word.tuvung).includes(query) ||
+                    normalize(word.dichnghia).includes(query) ||
+                    normalize(word.chude).includes(query) ||
+                    normalize(word.loaitu).includes(query);
+        
+                const matchDeck = selectedDecks.includes('all') || selectedDecks.includes(word.chude);
+        
+                const statusKey = getWordStatusKey(word);
+                const matchStatus = selectedStatuses.includes('all') || selectedStatuses.includes(statusKey);
+        
+                return matchQuery && matchDeck && matchStatus;
+            });
+        
+            // 2. SẮP XẾP DỮ LIỆU (Mặc định luôn A-Z theo Tên bộ thẻ -> Tên thẻ từ)
+            filtered.sort((a, b) => {
+                // Quy chuẩn sắp xếp A-Z mặc định
+                const defaultSort = a.chude.localeCompare(b.chude, 'vi', { sensitivity: 'base' }) || 
+                                    a.tuvung.localeCompare(b.tuvung, 'vi', { sensitivity: 'base' });
+        
+                switch (sortVal) {
+                    case 'review_asc':
+                        return (getReviewCountTotal(a) - getReviewCountTotal(b)) || defaultSort;
+                        
+                    case 'review_desc':
+                        return (getReviewCountTotal(b) - getReviewCountTotal(a)) || defaultSort;
+                    
+                    case 'grad_first': {
+                        const aGrad = isWaitingGraduation(a) ? 1 : 0;
+                        const bGrad = isWaitingGraduation(b) ? 1 : 0;
+                        if (aGrad !== bGrad) return bGrad - aGrad;
+                        
+                        const starDiff = (b.stars || 0) - (a.stars || 0);
+                        if (starDiff !== 0) return starDiff;
+        
+                        const dayDiff = getWaitingDays(b) - getWaitingDays(a);
+                        if (dayDiff !== 0) return dayDiff;
+        
+                        return defaultSort;
+                    }
+        
+                    case 'grad_last': {
+                        const aGrad = isWaitingGraduation(a) ? 1 : 0;
+                        const bGrad = isWaitingGraduation(b) ? 1 : 0;
+                        if (aGrad !== bGrad) return aGrad - bGrad;
+                        
+                        const starDiff = (b.stars || 0) - (a.stars || 0);
+                        if (starDiff !== 0) return starDiff;
+        
+                        const dayDiff = getWaitingDays(b) - getWaitingDays(a);
+                        if (dayDiff !== 0) return dayDiff;
+        
+                        return defaultSort;
+                    }
+        
+                    default:
+                        return defaultSort;
+                }
+            });
+        
+            return filtered;
+        }
+
 
         function renderManage() {
             const container = document.getElementById('deck-list');
@@ -1553,7 +1720,7 @@
                 const progress = total ? Math.round((learned / total) * 100) : 0;
 
                 return `
-                    <details open class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+                    <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
                         <summary class="cursor-pointer p-4 list-none">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
@@ -1607,6 +1774,75 @@
             }).join('');
         }
 
+        // Đóng / Mở menu Dropdown
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id);
+            document.querySelectorAll('[id\$="-dropdown-menu"]').forEach(el => {
+                if (el.id !== id) el.classList.add('hidden');
+            });
+            menu.classList.toggle('hidden');
+        }
+        
+        // Lắng nghe sự kiện click ra ngoài để tự động đóng Dropdown
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.relative')) {
+                document.querySelectorAll('[id\$="-dropdown-menu"]').forEach(el => el.classList.add('hidden'));
+            }
+        });
+        
+        // Xử lý sự kiện khi chọn Checkbox Bộ thẻ
+        function handleDeckChange(ckb) {
+            const allCkbs = document.querySelectorAll('.deck-ckb');
+            if (ckb.value === 'all') {
+                allCkbs.forEach(c => c.checked = ckb.checked);
+            } else {
+                const allItemCkbs = [...allCkbs].filter(c => c.value !== 'all');
+                const allChecked = allItemCkbs.every(c => c.checked);
+                document.querySelector('.deck-ckb[value="all"]').checked = allChecked;
+            }
+        
+            selectedDecks = [...allCkbs].filter(c => c.checked).map(c => c.value);
+            
+            // Cập nhật văn bản hiển thị trên nút Dropdown
+            const label = document.getElementById('deck-dropdown-label');
+            if (selectedDecks.includes('all') || selectedDecks.length === allCkbs.length) {
+                selectedDecks = ['all'];
+                label.textContent = 'Tất cả bộ thẻ';
+            } else if (selectedDecks.length === 0) {
+                label.textContent = 'Chưa chọn bộ thẻ';
+            } else {
+                label.textContent = `Đã chọn (${selectedDecks.length}) bộ thẻ`;
+            }
+            
+            renderManage();
+        }
+        
+        // Xử lý sự kiện khi chọn Checkbox Trạng thái
+        function handleStatusChange(ckb) {
+            const allCkbs = document.querySelectorAll('.status-ckb');
+            if (ckb.value === 'all') {
+                allCkbs.forEach(c => c.checked = ckb.checked);
+            } else {
+                const allItemCkbs = [...allCkbs].filter(c => c.value !== 'all');
+                const allChecked = allItemCkbs.every(c => c.checked);
+                document.querySelector('.status-ckb[value="all"]').checked = allChecked;
+            }
+        
+            selectedStatuses = [...allCkbs].filter(c => c.checked).map(c => c.value);
+            
+            // Cập nhật văn bản hiển thị trên nút Dropdown
+            const label = document.getElementById('status-dropdown-label');
+            if (selectedStatuses.includes('all') || selectedStatuses.length === allCkbs.length) {
+                selectedStatuses = ['all'];
+                label.textContent = 'Tất cả trạng thái';
+            } else if (selectedStatuses.length === 0) {
+                label.textContent = 'Chưa chọn trạng thái';
+            } else {
+                label.textContent = `Đã chọn (${selectedStatuses.length}) trạng thái`;
+            }
+            
+            renderManage();
+        }
         // ========== IMPORT/EXPORT ==========
 
         function downloadExcelTemplate() {
@@ -1823,22 +2059,22 @@
         }
 
         function restoreData(event) {
-            const file = event.target.files[0];
+            const file = event.target.files; // ✅ Đã sửa: Lấy đúng file đầu tiên 
             event.target.value = '';
-
+        
             if (!file) return;
-
+        
             const reader = new FileReader();
-
+        
             reader.onload = function(loadEvent) {
                 try {
                     const parsed = JSON.parse(loadEvent.target.result);
                     const restored = Array.isArray(parsed) ? parsed : parsed.words;
-
+        
                     if (!Array.isArray(restored)) {
                         throw new Error('Invalid backup');
                     }
-
+        
                     const cleaned = restored
                         .map(word => ({
                             id: word.id || uid(),
@@ -1847,34 +2083,405 @@
                             loaitu: String(word.loaitu ?? word.tuloai ?? '').trim(),
                             dichnghia: String(word.dichnghia || '').trim(),
                             learned: Boolean(word.learned),
-                            reviewCountQuiz: Math.max(0, Number(word.reviewCountQuiz ?? word.reviewCount ?? 0)),
-                            reviewCountTyping: Math.max(0, Number(word.reviewCountTyping ?? 0)),
+                            reviewCountQuiz: Number.isFinite(Number(word.reviewCountQuiz ?? word.reviewCount)) ? Number(word.reviewCountQuiz ?? word.reviewCount) : 0,
+                            reviewCountTyping: Number.isFinite(Number(word.reviewCountTyping)) ? Number(word.reviewCountTyping) : 0,
                             stars: Math.max(0, Math.min(3, Number(word.stars ?? 0))),
                             lastModified: word.lastModified ? String(word.lastModified) : null,
                             isGraduated: Boolean(word.isGraduated),
                         }))
                         .filter(word => word.chude && word.tuvung && word.loaitu && word.dichnghia);
-
+        
                     if (!cleaned.length) throw new Error('Empty backup');
-
+        
                     if (!confirm(`Khôi phục ${cleaned.length} từ từ file sao lưu?\n\nDữ liệu hiện tại sẽ bị thay thế.`)) {
                         return;
                     }
-
+        
                     words = cleaned;
                     saveData();
                     renderHome();
                     renderManageInit();
-
+        
                     alert('Khôi phục dữ liệu thành công.');
                 } catch (error) {
-                    alert('File sao lưu không hợp lệ hoặc đã bị hỏng.');
+                    alert('File sao lưu không hợp lệ, bị hỏng hoặc thiếu trường dữ liệu bắt buộc (loaitu).');
                 }
             };
-
+        
             reader.readAsText(file);
         }
-
+        // ========== REPORT RENDERING FUNCTIONS ==========
+    
+        // 1. Màn hình Tiến độ / Hoàn thành HỌC FLASHCARD
+        function renderStudyReport(isCompleted) {
+            const container = document.getElementById('study-report-content');
+            const total = sessionOriginalStudyList.length;
+            const learnedCount = studyIndex;
+            const unlearnedCount = Math.max(0, total - learnedCount);
+            const percent = total ? Math.round((learnedCount / total) * 100) : 0;
+            const timeText = formatSessionTime(sessionElapsedSeconds);
+    
+            // Lấy danh sách bộ thẻ đã chọn
+            const decks = [...new Set(sessionOriginalStudyList.map(w => w.chude))].join(', ');
+    
+            if (isCompleted) {
+                // Màn hình Hoàn thành 100%
+                container.innerHTML = `
+                    <div class="text-center space-y-2 border-b border-slate-200 dark:border-slate-800 pb-4">
+                        <h2 class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">🎉 HOÀN THÀNH PHIÊN HỌC!</h2>
+                    </div>
+    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Bộ thẻ:</span>
+                            <strong class="font-bold">${escapeHTML(decks)}</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Số thẻ học:</span>
+                            <strong class="font-bold">${total}/${total}</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Thời gian:</span>
+                            <strong class="font-bold">${timeText}</strong>
+                        </div>
+                    </div>
+    
+                    <div class="pt-4">
+                        <button onclick="stopSessionTimer(); navigate('home');" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold shadow-md hover:bg-indigo-700 transition">
+                            <i class="fa-solid fa-house mr-1"></i> Về nhà
+                        </button>
+                    </div>
+                `;
+            } else {
+                // Màn hình Tiến độ Học (Dang dở)
+                const unlearnedList = sessionOriginalStudyList.slice(studyIndex);
+                const unlearnedHTML = unlearnedList.map(w => `<li class="text-sm py-0.5">• <span class="font-bold">${escapeHTML(w.tuvung)}</span></li>`).join('');
+    
+                container.innerHTML = `
+                    <div class="text-center space-y-1 border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <h2 class="text-xl font-bold flex items-center justify-center gap-2">
+                            <span>📊</span> TIẾN ĐỘ HỌC
+                        </h2>
+                    </div>
+    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Bộ thẻ:</span>
+                            <strong class="font-bold">${escapeHTML(decks)}</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Đã học:</span>
+                            <strong class="font-bold text-emerald-600 dark:text-emerald-400">${learnedCount}/${total}</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Chưa học:</span>
+                            <strong class="font-bold text-amber-600 dark:text-amber-400">${unlearnedCount}/${total}</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Tiến độ:</span>
+                            <strong class="font-bold">${percent}%</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Thời gian:</span>
+                            <strong class="font-bold">${timeText}</strong>
+                        </div>
+                    </div>
+    
+                    <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
+                        <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Những từ chưa học:</p>
+                        <ul class="max-h-40 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3">
+                            ${unlearnedHTML || '<li class="text-xs text-slate-400">Không có</li>'}
+                        </ul>
+                    </div>
+    
+                    <div class="grid grid-cols-2 gap-3 pt-3">
+                        <button onclick="resumeSessionTimer(); navigate('study-run');" class="py-3 rounded-xl bg-indigo-600 text-white font-bold shadow-md hover:bg-indigo-700 transition">
+                            <i class="fa-solid fa-play mr-1"></i> Tiếp tục
+                        </button>
+                        <button onclick="stopSessionTimer(); navigate('home');" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                            <i class="fa-solid fa-house mr-1"></i> Về nhà
+                        </button>
+                    </div>
+                `;
+            }
+    
+            navigate('study-report');
+        }
+    
+        // 2. Màn hình Tiến độ / Hoàn thành ÔN TẬP (Gồm cả Lật thẻ, Quiz, Typing, Nâng sao, Review tốt nghiệp)
+        function renderReviewReport(isCompleted) {
+            const container = document.getElementById('review-report-content');
+            const total = sessionOriginalReviewList.length;
+            const timeText = formatSessionTime(sessionElapsedSeconds);
+    
+            const modeNames = {
+                flashcard: 'Lật thẻ',
+                quiz: 'Trắc nghiệm',
+                typing: 'Tự luận',
+                upgrade: 'Nâng cấp sao',
+                graduated: 'Review tốt nghiệp'
+            };
+    
+            const currentModeName = modeNames[reviewMode] || 'Ôn tập';
+    
+            if (reviewMode === 'upgrade') {
+                renderUpgradeReport(isCompleted, container, total, timeText);
+            } else {
+                // Đã ôn: Nếu ở retryPhase thì coi như đã duyệt qua 100% lượt chính (total)
+                const reviewedCount = isCompleted ? total : (isRetryPhase ? total : Math.min(total, reviewIndex));
+                
+                // Tính số thẻ còn lại
+                let pendingItems = [];
+                
+                // Lấy thẻ chưa làm trong đợt hiện tại
+                reviewList.slice(reviewIndex).forEach(w => {
+                    pendingItems.push({ word: w, isPenalty: isRetryPhase });
+                });
+                
+                // Lấy thẻ trong hàng chờ phạt tiếp theo
+                retryQueue.forEach(w => {
+                    pendingItems.push({ word: w, isPenalty: true });
+                });
+    
+                const remainingCount = isCompleted ? 0 : pendingItems.length;
+                const percent = total ? Math.round((reviewedCount / total) * 100) : 0;
+    
+                if (isCompleted) {
+                    const titleText = reviewMode === 'graduated' ? '🎉 HOÀN THÀNH REVIEW TỐT NGHIỆP!' : '🎉 HOÀN THÀNH PHIÊN ÔN TẬP!';
+    
+                    container.innerHTML = `
+                        <div class="text-center space-y-2 border-b border-slate-200 dark:border-slate-800 pb-4">
+                            <h2 class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">${titleText}</h2>
+                        </div>
+    
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 dark:text-slate-400">Chế độ:</span>
+                                <strong class="font-bold">${currentModeName}</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 dark:text-slate-400">Số thẻ đã ôn:</span>
+                                <strong class="font-bold">${total}/${total}</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 dark:text-slate-400">Thời gian:</span>
+                                <strong class="font-bold">${timeText}</strong>
+                            </div>
+                        </div>
+    
+                        <div class="pt-4">
+                            <button onclick="stopSessionTimer(); navigate('home');" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold shadow-md hover:bg-emerald-700 transition">
+                                <i class="fa-solid fa-house mr-1"></i> Về nhà
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    const titleText = reviewMode === 'graduated' ? '📊 TIẾN ĐỘ REVIEW TỐT NGHIỆP' : '📊 TIẾN ĐỘ ÔN TẬP';
+    
+                    const pendingHTML = pendingItems.map(item => `
+                        <li class="text-sm py-0.5">
+                            • <span class="font-bold">${escapeHTML(item.word.tuvung)}</span> - ${escapeHTML(item.word.dichnghia)}
+                            ${item.isPenalty ? ' <span class="text-red-500 font-semibold">(Phạt)</span>' : ''}
+                        </li>
+                    `).join('');
+    
+                    container.innerHTML = `
+                        <div class="text-center space-y-1 border-b border-slate-200 dark:border-slate-800 pb-3">
+                            <h2 class="text-xl font-bold flex items-center justify-center gap-2">
+                                <span>📊</span> ${titleText}
+                            </h2>
+                        </div>
+    
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 dark:text-slate-400">Chế độ:</span>
+                                <strong class="font-bold">${currentModeName}</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 dark:text-slate-400">Đã ôn:</span>
+                                <strong class="font-bold text-emerald-600 dark:text-emerald-400">${reviewedCount}/${total}</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 dark:text-slate-400">Chưa ôn:</span>
+                                <strong class="font-bold text-amber-600 dark:text-amber-400">${remainingCount}/${total} (kể cả phạt)</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 dark:text-slate-400">Tỉ lệ:</span>
+                                <strong class="font-bold">${percent}%</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 dark:text-slate-400">Thời gian:</span>
+                                <strong class="font-bold">${timeText}</strong>
+                            </div>
+                        </div>
+    
+                        <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
+                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Những thẻ chưa ôn xong:</p>
+                            <ul class="max-h-40 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3">
+                                ${pendingHTML || '<li class="text-xs text-slate-400">Không có</li>'}
+                            </ul>
+                        </div>
+    
+                        <div class="grid grid-cols-2 gap-3 pt-3">
+                            <button onclick="resumeSessionTimer(); navigate('review-run');" class="py-3 rounded-xl bg-emerald-600 text-white font-bold shadow-md hover:bg-emerald-700 transition">
+                                <i class="fa-solid fa-play mr-1"></i> Tiếp tục
+                            </button>
+                            <button onclick="stopSessionTimer(); navigate('home');" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                                <i class="fa-solid fa-house mr-1"></i> Về nhà
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+    
+            navigate('review-report');
+        }
+    
+        // 3. Hàm riêng render Báo cáo cho NÂNG CẤP SAO
+        function renderUpgradeReport(isCompleted, container, total, timeText) {
+            const upgradedList = [];
+            const downgradedList = [];
+    
+            sessionOriginalReviewList.forEach(w => {
+                const initialStars = sessionInitialStarsMap[w.id] ?? 0;
+                const currentWord = words.find(item => item.id === w.id) || w;
+                const currentStars = currentWord.stars || 0;
+    
+                if (currentStars > initialStars) {
+                    const gradTag = currentStars === 3 ? ' 🎓 Tốt nghiệp' : '';
+                    upgradedList.push(`• <span class="font-bold">${escapeHTML(w.tuvung)}</span> (${initialStars}⭐ ➔ ${currentStars}⭐${gradTag})`);
+                } else if (currentStars < initialStars) {
+                    downgradedList.push(`• <span class="font-bold">${escapeHTML(w.tuvung)}</span> (${initialStars}⭐ ➔ ${currentStars}⭐)`);
+                }
+            });
+    
+            const upgradedHTML = upgradedList.map(item => `<li class="text-sm text-emerald-600 dark:text-emerald-400 py-0.5">${item}</li>`).join('');
+            const downgradedHTML = downgradedList.map(item => `<li class="text-sm text-red-500 py-0.5">${item}</li>`).join('');
+    
+            if (isCompleted) {
+                container.innerHTML = `
+                    <div class="text-center space-y-2 border-b border-slate-200 dark:border-slate-800 pb-4">
+                        <h2 class="text-2xl font-extrabold text-amber-500">🎉 HOÀN THÀNH NÂNG CẤP SAO!</h2>
+                    </div>
+    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Tổng số thẻ:</span>
+                            <strong class="font-bold">${total}/${total}</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Thời gian:</span>
+                            <strong class="font-bold">${timeText}</strong>
+                        </div>
+                    </div>
+    
+                    <div class="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-3">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">⭐ Thẻ được nâng sao:</p>
+                            <ul class="max-h-32 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3">
+                                ${upgradedHTML || '<li class="text-xs text-slate-400">Không có</li>'}
+                            </ul>
+                        </div>
+    
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">🔻 Thẻ bị hạ sao:</p>
+                            <ul class="max-h-32 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3">
+                                ${downgradedHTML || '<li class="text-xs text-slate-400">Không có</li>'}
+                            </ul>
+                        </div>
+                    </div>
+    
+                    <div class="pt-3">
+                        <button onclick="stopSessionTimer(); navigate('home');" class="w-full py-3 rounded-xl bg-amber-500 text-white font-bold shadow-md hover:bg-amber-600 transition">
+                            <i class="fa-solid fa-house mr-1"></i> Về nhà
+                        </button>
+                    </div>
+                `;
+            } else {
+                const testedCount = isRetryPhase ? total : Math.min(total, reviewIndex);
+    
+                let pendingItems = [];
+                reviewList.slice(reviewIndex).forEach(w => {
+                    pendingItems.push({ word: w, isPenalty: isRetryPhase });
+                });
+                retryQueue.forEach(w => {
+                    pendingItems.push({ word: w, isPenalty: true });
+                });
+    
+                const remainingCount = pendingItems.length;
+                const percent = total ? Math.round((testedCount / total) * 100) : 0;
+    
+                const pendingHTML = pendingItems.map(item => `
+                    <li class="text-sm py-0.5">
+                        • <span class="font-bold">${escapeHTML(item.word.tuvung)}</span> - ${escapeHTML(item.word.dichnghia)}
+                        ${item.isPenalty ? ' <span class="text-red-500 font-semibold">(Phạt)</span>' : ''}
+                    </li>
+                `).join('');
+    
+                container.innerHTML = `
+                    <div class="text-center space-y-1 border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <h2 class="text-xl font-bold flex items-center justify-center gap-2">
+                            <span>📊</span> TIẾN ĐỘ NÂNG CẤP SAO
+                        </h2>
+                    </div>
+    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Chế độ:</span>
+                            <strong class="font-bold">Nâng cấp sao</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Đã thi:</span>
+                            <strong class="font-bold text-emerald-600 dark:text-emerald-400">${testedCount}/${total}</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Chưa thi:</span>
+                            <strong class="font-bold text-amber-600 dark:text-amber-400">${remainingCount}/${total} (kể cả phạt)</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Tỉ lệ hoàn thành:</span>
+                            <strong class="font-bold">${percent}%</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 dark:text-slate-400">Thời gian:</span>
+                            <strong class="font-bold">${timeText}</strong>
+                        </div>
+                    </div>
+    
+                    <div class="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-3">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">⭐ Thẻ được nâng sao:</p>
+                            <ul class="max-h-28 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5">
+                                ${upgradedHTML || '<li class="text-xs text-slate-400">Chưa có</li>'}
+                            </ul>
+                        </div>
+    
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">🔻 Thẻ bị hạ sao:</p>
+                            <ul class="max-h-28 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5">
+                                ${downgradedHTML || '<li class="text-xs text-slate-400">Chưa có</li>'}
+                            </ul>
+                        </div>
+    
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">⏳ Thẻ chưa thi / chưa xong:</p>
+                            <ul class="max-h-28 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5">
+                                ${pendingHTML || '<li class="text-xs text-slate-400">Không có</li>'}
+                            </ul>
+                        </div>
+                    </div>
+    
+                    <div class="grid grid-cols-2 gap-3 pt-3">
+                        <button onclick="resumeSessionTimer(); navigate('review-run');" class="py-3 rounded-xl bg-amber-500 text-white font-bold shadow-md hover:bg-amber-600 transition">
+                            <i class="fa-solid fa-play mr-1"></i> Tiếp tục
+                        </button>
+                        <button onclick="stopSessionTimer(); navigate('home');" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                            <i class="fa-solid fa-house mr-1"></i> Về nhà
+                        </button>
+                    </div>
+                `;
+            }
+        }
         // ========== INIT ==========
 
         loadTheme();
