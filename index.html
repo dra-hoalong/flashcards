@@ -216,10 +216,17 @@
                     <div class="flip-front rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col items-center justify-center text-center p-6">
                         <span id="study-deck-label" class="absolute top-6 text-xs px-3 py-1 rounded-full bg-indigo-100 text-indigo-600"></span>
                         <h2 id="study-word" class="text-4xl font-extrabold break-words"></h2>
+                        <!-- BỔ SUNG DÒNG NÀY VÀO GIỮA -->
+                        <p id="study-phienam" class="text-slate-400 text-sm font-mono mt-1.5"></p>
                         <p id="study-type" class="text-slate-400 italic mt-3"></p>
                         <p class="absolute bottom-6 text-xs text-slate-400"><i class="fa-solid fa-rotate mr-1"></i>Chạm để lật thẻ</p>
                     </div>
-                    <div class="flip-back rounded-3xl bg-indigo-600 text-white shadow-xl flex flex-col items-center justify-center text-center p-6">
+                    <div class="flip-back rounded-3xl bg-indigo-600 text-white shadow-xl flex flex-col items-center justify-center text-center p-6 relative">
+                        <!-- NÚT CHỈNH SỬA DỊCH NGHĨA Ở GÓC TRÊN BÊN PHẢI -->
+                        <button onclick="editCurrentStudyMeaning(event)" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-base transition shadow-sm" title="Chỉnh sửa dịch nghĩa">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    
                         <span class="text-indigo-200 text-sm mb-5">Dịch nghĩa</span>
                         <h2 id="study-meaning" class="text-3xl font-bold break-words"></h2>
                     </div>
@@ -476,6 +483,11 @@
                             <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Loại từ</p>
                             <p id="detail-loaitu" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2"></p>
                         </div>
+                        <!-- BỔ SUNG Ô HIỂN THỊ PHIÊN ÂM -->
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Phiên âm</p>
+                            <p id="detail-phienam" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2 font-mono"></p>
+                        </div>
                         <div>
                             <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Dịch nghĩa</p>
                             <p id="detail-dichnghia" class="text-sm bg-slate-50 dark:bg-slate-800 rounded-lg p-2"></p>
@@ -580,6 +592,7 @@
                                 <th class="p-2 text-left">Chủ đề</th>
                                 <th class="p-2 text-left">Từ vựng</th>
                                 <th class="p-2 text-left">Từ loại</th>
+                                <th class="p-2 text-left">Phiên âm</th> <!-- BỔ SUNG CỘT NÀY -->
                                 <th class="p-2 text-left">Nghĩa</th>
                             </tr>
                         </thead>
@@ -607,6 +620,26 @@
                 <!-- Nội dung sẽ nạp tự động bằng JS -->
             </div>
         </section>
+
+        <!-- BACKUP REMINDER MODAL (CHỈ CÓ 1 LỰA CHỌN SAO LƯU) -->
+        <div id="backup-reminder-modal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 flex items-center justify-center">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm p-6 text-center space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+                <div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto text-3xl">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Nhắc nhở sao lưu dữ liệu</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Để bảo toàn tiến trình học tập vừa thực hiện, vui lòng thực hiện sao lưu trước khi quay về trang chủ.
+                    </p>
+                </div>
+                <div class="pt-2">
+                    <button onclick="executeBackupAndGoHome()" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg transition flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-file-excel"></i> Sao lưu ngay
+                    </button>
+                </div>
+            </div>
+        </div>
         
     </main>
 
@@ -727,15 +760,16 @@
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (!raw) return;
-
+        
                 const parsed = JSON.parse(raw);
                 words = Array.isArray(parsed) ? parsed : parsed.words || [];
-
+        
                 words = words.map(word => ({
                     id: word.id || uid(),
                     chude: String(word.chude || 'Khác').trim(),
                     tuvung: String(word.tuvung || '').trim(),
                     loaitu: String(word.loaitu ?? word.tuloai ?? '').trim(),
+                    phienam: String(word.phienam || '').trim(), // BỔ SUNG TRƯỜNG PHIÊN ÂM
                     dichnghia: String(word.dichnghia || '').trim(),
                     learned: Boolean(word.learned),
                     reviewCountQuiz: Number.isFinite(Number(word.reviewCountQuiz)) ? Number(word.reviewCountQuiz) : 0,
@@ -749,6 +783,7 @@
                 console.error('Lỗi đọc dữ liệu:', error);
             }
         }
+
 
         function saveData() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
@@ -905,9 +940,44 @@
             document.getElementById('study-deck-label').textContent = word.chude;
             document.getElementById('study-word').textContent = word.tuvung;
             document.getElementById('study-type').textContent = word.loaitu ? `(${word.loaitu})` : '';
+            document.getElementById('study-phienam').textContent = word.phienam ? (word.phienam.startsWith('/') ? word.phienam : `/${word.phienam}/`) : '';
             document.getElementById('study-meaning').textContent = word.dichnghia;
         }
 
+        // ========== CHỈNH SỬA DỊCH NGHĨA TRỰC TIẾP TRÊN MẶT SAU THẺ HỌC ==========
+        function editCurrentStudyMeaning(event) {
+            if (event) event.stopPropagation(); // Ngăn sự kiện lật thẻ khi bấm nút Sửa
+        
+            const current = studyList[studyIndex];
+            if (!current) return;
+        
+            // Hiển thị hộp thoại nhập nghĩa mới
+            const newMeaning = prompt(`Chỉnh sửa dịch nghĩa cho từ "${current.tuvung}":`, current.dichnghia);
+        
+            // Nếu bấm Hủy (Cancel) hoặc không thay đổi gì
+            if (newMeaning === null) return;
+        
+            const trimmed = newMeaning.trim();
+            if (!trimmed) {
+                alert('Dịch nghĩa không được để trống!');
+                return;
+            }
+        
+            // 1. Cập nhật nghĩa mới cho thẻ hiện tại trong phiên học
+            current.dichnghia = trimmed;
+        
+            // 2. Ghi đè trực tiếp vào kho từ vựng chính (words) & lưu LocalStorage
+            const original = words.find(w => w.id === current.id);
+            if (original) {
+                original.dichnghia = trimmed;
+                original.lastModified = new Date().toISOString().split('T'); // Cập nhật ngày sửa
+                saveData(); // Lưu lại ngay lập tức
+            }
+        
+            // 3. Cập nhật ngay lập tức văn bản hiển thị trên mặt sau thẻ
+            document.getElementById('study-meaning').textContent = trimmed;
+        }
+        
         function toggleCard(id) {
             document.getElementById(id).classList.toggle('is-flipped');
             
@@ -1189,13 +1259,15 @@
         }
 
         function renderReviewFlashcard(word) {
+            const phienamText = word.phienam ? (word.phienam.startsWith('/') ? word.phienam : `/${word.phienam}/`) : '';
             document.getElementById('review-container').innerHTML = `
                 <div id="review-card" onclick="toggleCard('review-card')" class="flip-container w-full h-[420px] cursor-pointer">
                     <div class="flip-inner">
                         <div class="flip-front rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col items-center justify-center text-center p-6">
                             <span class="absolute top-6 text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">${escapeHTML(word.chude)}</span>
                             <h2 class="text-4xl font-extrabold break-words">${escapeHTML(word.tuvung)}</h2>
-                            <p class="text-slate-400 italic mt-3">${escapeHTML(word.loaitu ? '(' + word.loaitu + ')' : '')}</p>
+                            ${phienamText ? `<p class="text-slate-400 text-sm font-mono mt-1.5">\${escapeHTML(phienamText)}</p>` : ''}
+                            <p class="text-slate-400 italic mt-2">${escapeHTML(word.loaitu ? '(' + word.loaitu + ')' : '')}</p>
                             <p class="absolute bottom-6 text-xs text-slate-400"><i class="fa-solid fa-rotate mr-1"></i>Chạm để lật thẻ</p>
                         </div>
         
@@ -1244,23 +1316,25 @@
 
         function renderQuiz(word) {
             const options = uniqueQuizOptions(word);
-
+            const phienamText = word.phienam ? (word.phienam.startsWith('/') ? word.phienam : `/${word.phienam}/`) : '';
+        
             document.getElementById('review-container').innerHTML = `
                 <div class="rounded-3xl bg-indigo-600 text-white p-6 text-center shadow-lg">
                     <p class="text-indigo-200 text-sm">Chọn nghĩa đúng của từ</p>
                     <h2 class="text-4xl font-extrabold mt-3">${escapeHTML(word.tuvung)}</h2>
+                    ${phienamText ? `<p class="text-indigo-200 text-sm font-mono mt-1">\${escapeHTML(phienamText)}</p>` : ''}
                     <p class="text-indigo-100 italic mt-2">${escapeHTML(word.loaitu ? '(' + word.loaitu + ')' : '')}</p>
                 </div>
-
+        
                 <div id="quiz-options" class="space-y-3 mt-4">
                     ${options.map((option, index) => `
                         <button
-                            data-answer="${escapeHTML(option)}"
-                            data-correct="${escapeHTML(word.dichnghia)}"
+                            data-answer="\${escapeHTML(option)}"
+                            data-correct="\${escapeHTML(word.dichnghia)}"
                             onclick="answerQuiz(this)"
                             class="quiz-option w-full p-4 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 text-left font-semibold hover:border-indigo-500 transition">
-                            <span class="inline-flex w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 items-center justify-center mr-2">${String.fromCharCode(65 + index)}</span>
-                            ${escapeHTML(option)}
+                            <span class="inline-flex w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 items-center justify-center mr-2">\\({String.fromCharCode(65 + index)}</span>
+                            \\){escapeHTML(option)}
                         </button>
                     `).join('')}
                 </div>
@@ -1521,14 +1595,13 @@
             document.getElementById('detail-chude').textContent = word.chude;
             document.getElementById('detail-tuvung').textContent = word.tuvung;
             document.getElementById('detail-loaitu').textContent = word.loaitu;
+            document.getElementById('detail-phienam').textContent = word.phienam || '—'; // HIỂN THỊ PHIÊN ÂM
             document.getElementById('detail-dichnghia').textContent = word.dichnghia;
             
             document.getElementById('detail-learned').textContent = word.learned ? '✅ Đã học' : '⏳ Chưa học';
-            
             document.getElementById('detail-quiz').textContent = (word.reviewCountQuiz || 0);
             document.getElementById('detail-typing').textContent = (word.reviewCountTyping || 0);
             document.getElementById('detail-total').textContent = getReviewCountTotal(word);
-            
             document.getElementById('detail-lastmodified').textContent = word.lastModified || 'Chưa cập nhật';
             
             const waitDays = getWaitingDays(word);
@@ -1866,10 +1939,10 @@
 
         function downloadExcelTemplate() {
             const data = [
-                { chude: 'General', tuvung: 'abandon', loaitu: 'verb', dichnghia: 'từ bỏ' },
-                { chude: 'Medical', tuvung: 'dyspnea', loaitu: 'noun', dichnghia: 'khó thở' }
+                { chude: 'General', tuvung: 'abandon', loaitu: 'verb', phienam: '/əˈbændən/', dichnghia: 'từ bỏ' },
+                { chude: 'Medical', tuvung: 'dyspnea', loaitu: 'noun', phienam: '/dɪspˈniːə/', dichnghia: 'khó thở' }
             ];
-
+        
             const worksheet = XLSX.utils.json_to_sheet(data);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Flashcards');
@@ -1899,6 +1972,7 @@
                         const chude = String(row.chude || '').trim();
                         const tuvung = String(row.tuvung || '').trim();
                         const loaitu = String(row.loaitu ?? row.tuloai ?? '').trim();
+                        const phienam = String(row.phienam || row['Phiên âm'] || '').trim(); // ĐỌC PHIÊN ÂM
                         const dichnghia = String(row.dichnghia || '').trim();
 
                         if (!chude && !tuvung && !loaitu && !dichnghia) {
@@ -1916,8 +1990,8 @@
                             importErrors.push(`Dòng ${line}: thiếu ${missing.join(', ')}.`);
                             return;
                         }
-
-                        importRows.push({ line, chude, tuvung, loaitu, dichnghia });
+        
+                        importRows.push({ line, chude, tuvung, loaitu, phienam, dichnghia });
                     });
 
                     const duplicateInFile = new Set();
@@ -1960,10 +2034,11 @@
                     <td class="p-2">${escapeHTML(row.chude)}</td>
                     <td class="p-2 font-semibold">${escapeHTML(row.tuvung)}</td>
                     <td class="p-2">${escapeHTML(row.loaitu)}</td>
+                    <td class="p-2 font-mono text-slate-500">${escapeHTML(row.phienam || '—')}</td>
                     <td class="p-2">${escapeHTML(row.dichnghia)}</td>
                 </tr>
             `).join('');
-
+            
             if (importRows.length > 200) {
                 body.innerHTML += `
                     <tr>
@@ -2020,6 +2095,7 @@
                         existing.chude = row.chude;
                         existing.tuvung = row.tuvung;
                         existing.loaitu = row.loaitu;
+                        existing.phienam = row.phienam;
                         existing.dichnghia = row.dichnghia;
                         replaced++;
                     } else {
@@ -2033,6 +2109,7 @@
                     chude: row.chude,
                     tuvung: row.tuvung,
                     loaitu: row.loaitu,
+                    phienam: row.phienam || '',
                     dichnghia: row.dichnghia,
                     learned: false,
                     reviewCountQuiz: 0,
@@ -2065,11 +2142,11 @@
                 return;
             }
         
-            // Chuẩn hóa toàn bộ danh sách từ vựng kèm tất cả chỉ số tiến trình học
             const exportData = words.map(word => ({
                 'chude': word.chude || 'Khác',
                 'tuvung': word.tuvung || '',
                 'loaitu': word.loaitu || '',
+                'phienam': word.phienam || '', // XUẤT CỘT PHIÊN ÂM GIỮA LOẠI TỪ VÀ DỊCH NGHĨA
                 'dichnghia': word.dichnghia || '',
                 'learned': word.learned ? 1 : 0,
                 'reviewCountQuiz': word.reviewCountQuiz || 0,
@@ -2080,12 +2157,10 @@
                 'id': word.id || uid()
             }));
         
-            // Tạo Workbook và Sheet Excel
             const worksheet = XLSX.utils.json_to_sheet(exportData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Vocabulary_Backup');
         
-            // Tải tệp Excel về thiết bị
             XLSX.writeFile(workbook, 'English_Vocabulary_Backup.xlsx');
         }
         
@@ -2126,6 +2201,7 @@
                             const chude = String(row.chude || row['Chủ đề'] || '').trim();
                             const tuvung = String(row.tuvung || row['Từ vựng'] || '').trim();
                             const loaitu = String(row.loaitu || row.tuloai || row['Loại từ'] || '').trim();
+                            const phienam = String(row.phienam || row['Phiên âm'] || '').trim(); // ĐỌC CỘT PHIÊN ÂM
                             const dichnghia = String(row.dichnghia || row['Dịch nghĩa'] || row['Nghĩa'] || '').trim();
         
                             // Xử lý cờ boolean và số liệu tiến trình
@@ -2145,6 +2221,7 @@
                                 chude,
                                 tuvung,
                                 loaitu,
+                                phienam,
                                 dichnghia,
                                 learned,
                                 reviewCountQuiz,
@@ -2207,17 +2284,15 @@
             const unlearnedCount = Math.max(0, total - learnedCount);
             const percent = total ? Math.round((learnedCount / total) * 100) : 0;
             const timeText = formatSessionTime(sessionElapsedSeconds);
-    
-            // Lấy danh sách bộ thẻ đã chọn
+        
             const decks = [...new Set(sessionOriginalStudyList.map(w => w.chude))].join(', ');
-    
+        
             if (isCompleted) {
-                // Màn hình Hoàn thành 100%
                 container.innerHTML = `
                     <div class="text-center space-y-2 border-b border-slate-200 dark:border-slate-800 pb-4">
                         <h2 class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">🎉 HOÀN THÀNH PHIÊN HỌC!</h2>
                     </div>
-    
+        
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-slate-500 dark:text-slate-400">Bộ thẻ:</span>
@@ -2232,25 +2307,24 @@
                             <strong class="font-bold">${timeText}</strong>
                         </div>
                     </div>
-    
+        
                     <div class="pt-4">
-                        <button onclick="stopSessionTimer(); navigate('home');" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold shadow-md hover:bg-indigo-700 transition">
+                        <button onclick="handleGoHomeFromReport()" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold shadow-md hover:bg-indigo-700 transition">
                             <i class="fa-solid fa-house mr-1"></i> Về nhà
                         </button>
                     </div>
                 `;
             } else {
-                // Màn hình Tiến độ Học (Dang dở)
                 const unlearnedList = sessionOriginalStudyList.slice(studyIndex);
                 const unlearnedHTML = unlearnedList.map(w => `<li class="text-sm py-0.5">• <span class="font-bold">${escapeHTML(w.tuvung)}</span></li>`).join('');
-    
+        
                 container.innerHTML = `
                     <div class="text-center space-y-1 border-b border-slate-200 dark:border-slate-800 pb-3">
                         <h2 class="text-xl font-bold flex items-center justify-center gap-2">
                             <span>📊</span> TIẾN ĐỘ HỌC
                         </h2>
                     </div>
-    
+        
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-slate-500 dark:text-slate-400">Bộ thẻ:</span>
@@ -2273,34 +2347,34 @@
                             <strong class="font-bold">${timeText}</strong>
                         </div>
                     </div>
-    
+        
                     <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
                         <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Những từ chưa học:</p>
                         <ul class="max-h-40 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3">
                             ${unlearnedHTML || '<li class="text-xs text-slate-400">Không có</li>'}
                         </ul>
                     </div>
-    
+        
                     <div class="grid grid-cols-2 gap-3 pt-3">
                         <button onclick="resumeSessionTimer(); navigate('study-run');" class="py-3 rounded-xl bg-indigo-600 text-white font-bold shadow-md hover:bg-indigo-700 transition">
                             <i class="fa-solid fa-play mr-1"></i> Tiếp tục
                         </button>
-                        <button onclick="stopSessionTimer(); navigate('home');" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                        <button onclick="handleGoHomeFromReport()" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                             <i class="fa-solid fa-house mr-1"></i> Về nhà
                         </button>
                     </div>
                 `;
             }
-    
+        
             navigate('study-report');
         }
-    
-        // 2. Màn hình Tiến độ / Hoàn thành ÔN TẬP (Gồm cả Lật thẻ, Quiz, Typing, Nâng sao, Review tốt nghiệp)
+        
+        // 2. Màn hình Tiến độ / Hoàn thành ÔN TẬP
         function renderReviewReport(isCompleted) {
             const container = document.getElementById('review-report-content');
             const total = sessionOriginalReviewList.length;
             const timeText = formatSessionTime(sessionElapsedSeconds);
-    
+        
             const modeNames = {
                 flashcard: 'Lật thẻ',
                 quiz: 'Trắc nghiệm',
@@ -2308,39 +2382,33 @@
                 upgrade: 'Nâng cấp sao',
                 graduated: 'Review tốt nghiệp'
             };
-    
+        
             const currentModeName = modeNames[reviewMode] || 'Ôn tập';
-    
+        
             if (reviewMode === 'upgrade') {
                 renderUpgradeReport(isCompleted, container, total, timeText);
             } else {
-                // Đã ôn: Nếu ở retryPhase thì coi như đã duyệt qua 100% lượt chính (total)
                 const reviewedCount = isCompleted ? total : (isRetryPhase ? total : Math.min(total, reviewIndex));
                 
-                // Tính số thẻ còn lại
                 let pendingItems = [];
-                
-                // Lấy thẻ chưa làm trong đợt hiện tại
                 reviewList.slice(reviewIndex).forEach(w => {
                     pendingItems.push({ word: w, isPenalty: isRetryPhase });
                 });
-                
-                // Lấy thẻ trong hàng chờ phạt tiếp theo
                 retryQueue.forEach(w => {
                     pendingItems.push({ word: w, isPenalty: true });
                 });
-    
+        
                 const remainingCount = isCompleted ? 0 : pendingItems.length;
                 const percent = total ? Math.round((reviewedCount / total) * 100) : 0;
-    
+        
                 if (isCompleted) {
                     const titleText = reviewMode === 'graduated' ? '🎉 HOÀN THÀNH REVIEW TỐT NGHIỆP!' : '🎉 HOÀN THÀNH PHIÊN ÔN TẬP!';
-    
+        
                     container.innerHTML = `
                         <div class="text-center space-y-2 border-b border-slate-200 dark:border-slate-800 pb-4">
                             <h2 class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">${titleText}</h2>
                         </div>
-    
+        
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
                                 <span class="text-slate-500 dark:text-slate-400">Chế độ:</span>
@@ -2355,30 +2423,30 @@
                                 <strong class="font-bold">${timeText}</strong>
                             </div>
                         </div>
-    
+        
                         <div class="pt-4">
-                            <button onclick="stopSessionTimer(); navigate('home');" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold shadow-md hover:bg-emerald-700 transition">
+                            <button onclick="handleGoHomeFromReport()" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold shadow-md hover:bg-emerald-700 transition">
                                 <i class="fa-solid fa-house mr-1"></i> Về nhà
                             </button>
                         </div>
                     `;
                 } else {
                     const titleText = reviewMode === 'graduated' ? '📊 TIẾN ĐỘ REVIEW TỐT NGHIỆP' : '📊 TIẾN ĐỘ ÔN TẬP';
-    
+        
                     const pendingHTML = pendingItems.map(item => `
                         <li class="text-sm py-0.5">
                             • <span class="font-bold">${escapeHTML(item.word.tuvung)}</span> - ${escapeHTML(item.word.dichnghia)}
                             ${item.isPenalty ? ' <span class="text-red-500 font-semibold">(Phạt)</span>' : ''}
                         </li>
                     `).join('');
-    
+        
                     container.innerHTML = `
                         <div class="text-center space-y-1 border-b border-slate-200 dark:border-slate-800 pb-3">
                             <h2 class="text-xl font-bold flex items-center justify-center gap-2">
                                 <span>📊</span> ${titleText}
                             </h2>
                         </div>
-    
+        
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
                                 <span class="text-slate-500 dark:text-slate-400">Chế độ:</span>
@@ -2401,39 +2469,39 @@
                                 <strong class="font-bold">${timeText}</strong>
                             </div>
                         </div>
-    
+        
                         <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
                             <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Những thẻ chưa ôn xong:</p>
                             <ul class="max-h-40 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3">
                                 ${pendingHTML || '<li class="text-xs text-slate-400">Không có</li>'}
                             </ul>
                         </div>
-    
+        
                         <div class="grid grid-cols-2 gap-3 pt-3">
                             <button onclick="resumeSessionTimer(); navigate('review-run');" class="py-3 rounded-xl bg-emerald-600 text-white font-bold shadow-md hover:bg-emerald-700 transition">
                                 <i class="fa-solid fa-play mr-1"></i> Tiếp tục
                             </button>
-                            <button onclick="stopSessionTimer(); navigate('home');" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                            <button onclick="handleGoHomeFromReport()" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                                 <i class="fa-solid fa-house mr-1"></i> Về nhà
                             </button>
                         </div>
                     `;
                 }
             }
-    
+        
             navigate('review-report');
         }
-    
-        // 3. Hàm riêng render Báo cáo cho NÂNG CẤP SAO
+        
+        // 3. Hàm Báo cáo cho NÂNG CẤP SAO
         function renderUpgradeReport(isCompleted, container, total, timeText) {
             const upgradedList = [];
             const downgradedList = [];
-    
+        
             sessionOriginalReviewList.forEach(w => {
                 const initialStars = sessionInitialStarsMap[w.id] ?? 0;
                 const currentWord = words.find(item => item.id === w.id) || w;
                 const currentStars = currentWord.stars || 0;
-    
+        
                 if (currentStars > initialStars) {
                     const gradTag = currentStars === 3 ? ' 🎓 Tốt nghiệp' : '';
                     upgradedList.push(`• <span class="font-bold">${escapeHTML(w.tuvung)}</span> (${initialStars}⭐ ➔ ${currentStars}⭐${gradTag})`);
@@ -2441,16 +2509,16 @@
                     downgradedList.push(`• <span class="font-bold">${escapeHTML(w.tuvung)}</span> (${initialStars}⭐ ➔ ${currentStars}⭐)`);
                 }
             });
-    
+        
             const upgradedHTML = upgradedList.map(item => `<li class="text-sm text-emerald-600 dark:text-emerald-400 py-0.5">${item}</li>`).join('');
             const downgradedHTML = downgradedList.map(item => `<li class="text-sm text-red-500 py-0.5">${item}</li>`).join('');
-    
+        
             if (isCompleted) {
                 container.innerHTML = `
                     <div class="text-center space-y-2 border-b border-slate-200 dark:border-slate-800 pb-4">
                         <h2 class="text-2xl font-extrabold text-amber-500">🎉 HOÀN THÀNH NÂNG CẤP SAO!</h2>
                     </div>
-    
+        
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-slate-500 dark:text-slate-400">Tổng số thẻ:</span>
@@ -2461,7 +2529,7 @@
                             <strong class="font-bold">${timeText}</strong>
                         </div>
                     </div>
-    
+        
                     <div class="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-3">
                         <div>
                             <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">⭐ Thẻ được nâng sao:</p>
@@ -2469,7 +2537,7 @@
                                 ${upgradedHTML || '<li class="text-xs text-slate-400">Không có</li>'}
                             </ul>
                         </div>
-    
+        
                         <div>
                             <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">🔻 Thẻ bị hạ sao:</p>
                             <ul class="max-h-32 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3">
@@ -2477,16 +2545,16 @@
                             </ul>
                         </div>
                     </div>
-    
+        
                     <div class="pt-3">
-                        <button onclick="stopSessionTimer(); navigate('home');" class="w-full py-3 rounded-xl bg-amber-500 text-white font-bold shadow-md hover:bg-amber-600 transition">
+                        <button onclick="handleGoHomeFromReport()" class="w-full py-3 rounded-xl bg-amber-500 text-white font-bold shadow-md hover:bg-amber-600 transition">
                             <i class="fa-solid fa-house mr-1"></i> Về nhà
                         </button>
                     </div>
                 `;
             } else {
                 const testedCount = isRetryPhase ? total : Math.min(total, reviewIndex);
-    
+        
                 let pendingItems = [];
                 reviewList.slice(reviewIndex).forEach(w => {
                     pendingItems.push({ word: w, isPenalty: isRetryPhase });
@@ -2494,24 +2562,24 @@
                 retryQueue.forEach(w => {
                     pendingItems.push({ word: w, isPenalty: true });
                 });
-    
+        
                 const remainingCount = pendingItems.length;
                 const percent = total ? Math.round((testedCount / total) * 100) : 0;
-    
+        
                 const pendingHTML = pendingItems.map(item => `
                     <li class="text-sm py-0.5">
                         • <span class="font-bold">${escapeHTML(item.word.tuvung)}</span> - ${escapeHTML(item.word.dichnghia)}
                         ${item.isPenalty ? ' <span class="text-red-500 font-semibold">(Phạt)</span>' : ''}
                     </li>
                 `).join('');
-    
+        
                 container.innerHTML = `
                     <div class="text-center space-y-1 border-b border-slate-200 dark:border-slate-800 pb-3">
                         <h2 class="text-xl font-bold flex items-center justify-center gap-2">
                             <span>📊</span> TIẾN ĐỘ NÂNG CẤP SAO
                         </h2>
                     </div>
-    
+        
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-slate-500 dark:text-slate-400">Chế độ:</span>
@@ -2534,7 +2602,7 @@
                             <strong class="font-bold">${timeText}</strong>
                         </div>
                     </div>
-    
+        
                     <div class="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-3">
                         <div>
                             <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">⭐ Thẻ được nâng sao:</p>
@@ -2542,14 +2610,14 @@
                                 ${upgradedHTML || '<li class="text-xs text-slate-400">Chưa có</li>'}
                             </ul>
                         </div>
-    
+        
                         <div>
                             <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">🔻 Thẻ bị hạ sao:</p>
                             <ul class="max-h-28 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5">
                                 ${downgradedHTML || '<li class="text-xs text-slate-400">Chưa có</li>'}
                             </ul>
                         </div>
-    
+        
                         <div>
                             <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">⏳ Thẻ chưa thi / chưa xong:</p>
                             <ul class="max-h-28 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5">
@@ -2557,18 +2625,37 @@
                             </ul>
                         </div>
                     </div>
-    
+        
                     <div class="grid grid-cols-2 gap-3 pt-3">
                         <button onclick="resumeSessionTimer(); navigate('review-run');" class="py-3 rounded-xl bg-amber-500 text-white font-bold shadow-md hover:bg-amber-600 transition">
                             <i class="fa-solid fa-play mr-1"></i> Tiếp tục
                         </button>
-                        <button onclick="stopSessionTimer(); navigate('home');" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                        <button onclick="handleGoHomeFromReport()" class="py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                             <i class="fa-solid fa-house mr-1"></i> Về nhà
                         </button>
                     </div>
                 `;
             }
         }
+
+        // ========== XỬ LÝ VỀ NHÀ KÈM SAO LƯU BẮT BUỘC ==========
+        function handleGoHomeFromReport() {
+            // Bật Pop-up nhắc nhở sao lưu
+            document.getElementById('backup-reminder-modal').classList.remove('hidden');
+        }
+        
+        function executeBackupAndGoHome() {
+            // 1. Tải tệp sao lưu Excel về thiết bị
+            backupData();
+            
+            // 2. Ẩn Pop-up
+            document.getElementById('backup-reminder-modal').classList.add('hidden');
+            
+            // 3. Dừng bộ đếm thời gian phiên học và quay về Trang chủ
+            stopSessionTimer();
+            navigate('home');
+        }
+
         
         // Đăng ký Service Worker cho PWA Offline
         if ('serviceWorker' in navigator) {
