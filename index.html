@@ -940,7 +940,7 @@
             document.getElementById('study-deck-label').textContent = word.chude;
             document.getElementById('study-word').textContent = word.tuvung;
             document.getElementById('study-type').textContent = word.loaitu ? `(${word.loaitu})` : '';
-            document.getElementById('study-phienam').textContent = word.phienam ? (word.phienam.startsWith('/') ? word.phienam : `/${word.phienam}/`) : '';
+            document.getElementById('study-phienam').textContent = word.phienam || '';
             document.getElementById('study-meaning').textContent = word.dichnghia;
         }
 
@@ -1259,14 +1259,14 @@
         }
 
         function renderReviewFlashcard(word) {
-            const phienamText = word.phienam ? (word.phienam.startsWith('/') ? word.phienam : `/${word.phienam}/`) : '';
+            const phienamText = word.phienam || '';
             document.getElementById('review-container').innerHTML = `
                 <div id="review-card" onclick="toggleCard('review-card')" class="flip-container w-full h-[420px] cursor-pointer">
                     <div class="flip-inner">
                         <div class="flip-front rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col items-center justify-center text-center p-6">
                             <span class="absolute top-6 text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">${escapeHTML(word.chude)}</span>
                             <h2 class="text-4xl font-extrabold break-words">${escapeHTML(word.tuvung)}</h2>
-                            ${phienamText ? `<p class="text-slate-400 text-sm font-mono mt-1.5">\${escapeHTML(phienamText)}</p>` : ''}
+                            ${phienamText ? `<p class="text-slate-400 text-sm font-mono mt-1.5">${escapeHTML(phienamText)}</p>` : ''}
                             <p class="text-slate-400 italic mt-2">${escapeHTML(word.loaitu ? '(' + word.loaitu + ')' : '')}</p>
                             <p class="absolute bottom-6 text-xs text-slate-400"><i class="fa-solid fa-rotate mr-1"></i>Chạm để lật thẻ</p>
                         </div>
@@ -1317,25 +1317,40 @@
 
         function renderQuiz(word) {
             const options = uniqueQuizOptions(word);
-            const phienamText = word.phienam ? (word.phienam.startsWith('/') ? word.phienam : `/${word.phienam}/`) : '';
+            const phienamText = word.phienam || '';
         
             document.getElementById('review-container').innerHTML = `
                 <div class="rounded-3xl bg-indigo-600 text-white p-6 text-center shadow-lg">
                     <p class="text-indigo-200 text-sm">Chọn nghĩa đúng của từ</p>
-                    <h2 class="text-4xl font-extrabold mt-3">${escapeHTML(word.tuvung)}</h2>
-                    ${phienamText ? `<p class="text-indigo-200 text-sm font-mono mt-1">\${escapeHTML(phienamText)}</p>` : ''}
-                    <p class="text-indigo-100 italic mt-2">${escapeHTML(word.loaitu ? '(' + word.loaitu + ')' : '')}</p>
+        
+                    <h2 class="text-4xl font-extrabold mt-3">
+                        ${escapeHTML(word.tuvung)}
+                    </h2>
+        
+                    ${phienamText ? `
+                        <p class="text-indigo-200 text-sm font-mono mt-1">
+                            ${escapeHTML(phienamText)}
+                        </p>
+                    ` : ''}
+        
+                    <p class="text-indigo-100 italic mt-2">
+                        ${escapeHTML(word.loaitu ? '(' + word.loaitu + ')' : '')}
+                    </p>
                 </div>
         
                 <div id="quiz-options" class="space-y-3 mt-4">
                     ${options.map((option, index) => `
                         <button
-                            data-answer="\${escapeHTML(option)}"
-                            data-correct="\${escapeHTML(word.dichnghia)}"
+                            data-answer="${escapeHTML(option)}"
+                            data-correct="${escapeHTML(word.dichnghia)}"
                             onclick="answerQuiz(this)"
                             class="quiz-option w-full p-4 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 text-left font-semibold hover:border-indigo-500 transition">
-                            <span class="inline-flex w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 items-center justify-center mr-2">\\({String.fromCharCode(65 + index)}</span>
-                            \\){escapeHTML(option)}
+        
+                            <span class="inline-flex w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 items-center justify-center mr-2">
+                                ${String.fromCharCode(65 + index)}
+                            </span>
+        
+                            ${escapeHTML(option)}
                         </button>
                     `).join('')}
                 </div>
