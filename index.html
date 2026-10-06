@@ -1285,6 +1285,7 @@
             `;
         }
 
+
         function reviewPrevious() {
             if (reviewIndex > 0) {
                 reviewIndex--;
@@ -2022,12 +2023,12 @@
             const body = document.getElementById('import-preview-body');
             const summary = document.getElementById('import-summary');
             const errors = document.getElementById('import-errors');
-
+        
             summary.innerHTML = `
                 Có <strong>${importRows.length}</strong> dòng hợp lệ để nhập.
-                ${importErrors.length ? `Có <strong>${importErrors.length}</strong> dòng bị loại bỏ.` : ''}
+                ${importErrors.length ? `Có <strong>\${importErrors.length}</strong> dòng bị loại bỏ.` : ''}
             `;
-
+        
             body.innerHTML = importRows.slice(0, 200).map(row => `
                 <tr class="border-t border-slate-200 dark:border-slate-800">
                     <td class="p-2">${row.line}</td>
@@ -2042,19 +2043,19 @@
             if (importRows.length > 200) {
                 body.innerHTML += `
                     <tr>
-                        <td colspan="5" class="p-3 text-center text-slate-500">
+                        <td colspan="6" class="p-3 text-center text-slate-500">
                             Chỉ hiển thị 200 dòng đầu tiên. Toàn bộ dữ liệu hợp lệ sẽ được nhập.
                         </td>
                     </tr>
                 `;
             }
-
+        
             if (importErrors.length) {
                 errors.classList.remove('hidden');
                 errors.innerHTML = `
                     <strong>Các dòng không hợp lệ:</strong>
                     <ul class="list-disc ml-5 mt-2">
-                        ${importErrors.slice(0, 30).map(error => `<li>${escapeHTML(error)}</li>`).join('')}
+                        ${importErrors.slice(0, 30).map(error => `<li>\${escapeHTML(error)}</li>`).join('')}
                     </ul>
                     ${importErrors.length > 30 ? '<p class="mt-2">Chỉ hiển thị 30 lỗi đầu tiên.</p>' : ''}
                 `;
@@ -2062,7 +2063,7 @@
                 errors.classList.add('hidden');
                 errors.innerHTML = '';
             }
-
+        
             modal.classList.remove('hidden');
         }
 
