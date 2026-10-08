@@ -1,0 +1,146 @@
+================================================================================
+YÊU CẦU KỸ THUẬT VÀ KIẾN TRÚC PHẦN MỀM - NỀN TẢNG FLASHCARDS PRO
+================================================================================
+
+TÀI LIỆU MÔ TẢ CHI TIẾT TỔNG THỂ KIẾN TRÚC, MÔ HÌNH DỮ LIỆU, THUẬT TOÁN VÀ QUY TRÌNH VẬN HÀNH DỰA TRÊN MÃ NGUỒN THỰC TẾ
+
+--------------------------------------------------------------------------------
+1. TỔNG QUAN HỆ THỐNG VÀ KIẾN TRÚC TỔNG THỂ (SYSTEM ARCHITECTURE OVERVIEW)
+--------------------------------------------------------------------------------
+
+Ứng dụng Flashcards Pro được thiết kế và triển khai theo mô hình Đơn trang (Single Page Application - SPA) hoàn chỉnh, hoạt động hoàn toàn ở phía người dùng (Client-Side) và đóng gói trọn vẹn trong một tệp mã nguồn HTML duy nhất (index.html). Hệ thống được tích hợp chuẩn Ứng dụng Web Lũy tiến (Progressive Web App - PWA), cho phép cài đặt trực tiếp lên thiết bị di động (iOS/Android) hoặc máy tính cá nhân và vận hành độc lập 100% trong điều kiện không có kết nối mạng Internet (Offline-First Architecture).
+
+Tất cả các thành phần kiến trúc từ giao diện người dùng (UI), luồng điều hướng (Navigation Router), xử lý sự kiện (Event Handlers), thuật toán phân loại học tập (Spaced Repetition & Graduation Logic), trình đọc/ghi dữ liệu tệp tin nhị phân Excel (SheetJS Engine), cho đến cơ chế lưu trữ dữ liệu bền vững đều được thực thi trực tiếp trên trình duyệt web thông qua các API tiêu chuẩn của HTML5, JavaScript (ES6+) và Trình duyệt. Hệ thống không phụ thuộc vào bất kỳ máy chủ backend hay dịch vụ đám mây bên ngoài nào, đảm bảo tối đa tính riêng tư, tốc độ phản hồi tức thì và tính an toàn tuyệt đối cho dữ liệu học tập của người dùng.
+
+--------------------------------------------------------------------------------
+2. CÔNG NGHỆ BÊN THỨ BA VÀ THƯ VIỆN KỸ THUẬT (TECHNOLOGY STACK & LIBRARIES)
+--------------------------------------------------------------------------------
+
+Hệ thống tích hợp các thư viện và công nghệ chuẩn hóa tiên tiến nhất hiện nay nhằm tối ưu hóa hiệu năng và trải nghiệm người dùng:
+
+a) Tailwind CSS (Phiên bản CDN CDN-based Tailwind Engine):
+Mã nguồn nhúng trực tiếp cdn.tailwindcss.com để dựng giao diện người dùng theo phong cách Utility-First. Hệ thống cấu hình thuộc tính darkMode dạng 'class' (tailwind.config = { darkMode: 'class' }), cho phép chuyển đổi linh hoạt giữa giao diện Sáng (Light Mode) và Tối (Dark Mode). Toàn bộ layout được thiết kế đáp ứng (Responsive Design) với khung chứa giới hạn max-w-3xl, chuẩn hóa kích thước nút bấm tối thiểu min-h-[42px] để tối ưu hóa trải nghiệm chạm (Touch Targets) trên các thiết bị màn hình cảm ứng di động.
+
+b) Font Awesome 6.4.0 (Icon Library):
+Sử dụng bộ biểu tượng đồ họa cdnjs.cloudflare.com/cdnjs/libs/font-awesome/6.4.0/js/all.min.js để cung cấp hệ thống biểu tượng trực quan cho các nút điều hướng, chỉ báo trạng thái, chế độ ôn tập, bộ lọc và các nút thao tác tệp tin.
+
+c) SheetJS / xlsx (Phiên bản 0.18.5):
+Thư viện xử lý bảng tính cdnjs.cloudflare.com/cdnjs/libs/xlsx/0.18.5/xlsx.full.min.js đóng vai trò là động cơ xử lý dữ liệu đầu vào/đầu ra. Thư viện chịu trách nhiệm đọc dữ liệu nhị phân (ArrayBuffer) từ tệp Excel người dùng tải lên, phân tích thành các đối tượng JSON, đồng thời đóng gói mảng đối tượng từ vựng trong bộ nhớ thành tệp Excel (.xlsx) chuẩn để người dùng sao lưu hoặc xuất file mẫu.
+
+d) Service Worker & PWA Meta Tags:
+Hệ thống đăng ký tệp service-worker.js thông qua navigator.serviceWorker.register('./service-worker.js') ngay sau khi sự kiện window.load kích hoạt. Đi kèm là tệp cấu hình ứng dụng manifest.json cùng các thẻ Meta chuẩn của Apple (apple-mobile-web-app-capable, apple-mobile-web-app-status-bar-style) và biểu tượng icon-192.png, icon-512.png giúp ứng dụng lưu trữ bộ nhớ đệm (Cache) toàn bộ tài nguyên tĩnh và hoạt động ngoại tuyến mượt mà.
+
+--------------------------------------------------------------------------------
+3. MÔ HÌNH DỮ LIỆU VÀ CƠ CHẾ LƯU TRỮ BỀN VỮNG (DATA MODEL & STORAGE SPECIFICATION)
+--------------------------------------------------------------------------------
+
+Dữ liệu của ứng dụng được lưu trữ bền vững trong bộ nhớ cục bộ trình duyệt (Web Storage API - localStorage) thông qua khóa duy nhất FLASHCARD_PRO_V7. Cấu trúc dữ liệu trung tâm là mảng các đối tượng từ vựng (words), trong đó mỗi thẻ từ vựng là một Object chứa chính xác 11 trường dữ liệu kỹ thuật như sau:
+
+- id (Chuỗi - String): Mã định danh duy nhất của thẻ từ vựng, được sinh tự động thông qua hàm uid() với cấu trúc 'w_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8).
+- chude (Chuỗi - String): Tên bộ thẻ hoặc chủ đề bài học. Nếu để trống sẽ mặc định gán giá trị 'Khác'.
+- tuvung (Chuỗi - String): Từ vựng gốc bằng tiếng Anh.
+- loaitu (Chuỗi - String): Loại từ (danh từ, động từ, tính từ, trạng từ,...). Dữ liệu này tương thích cả với tên cột cũ tuloai khi nhập từ file Excel.
+- phienam (Chuỗi - String): Ký hiệu phiên âm quốc tế (IPA), hiển thị dưới dạng chuỗi font monospace /.../ nằm ở vị trí trung gian giữa loại từ và dịch nghĩa.
+- dichnghia (Chuỗi - String): Bản dịch nghĩa tiếng Việt tương ứng của từ vựng.
+- learned (Kiểu đúng/sai - Boolean): Cờ đánh dấu từ vựng đã trải qua phiên học ban đầu (True) hay chưa học (False).
+- reviewCountQuiz (Số nguyên - Number): Số lần ôn tập thành công và trả lời chính xác ở chế độ Trắc nghiệm (Quiz).
+- reviewCountTyping (Số nguyên - Number): Số lần ôn tập thành công và gõ chính xác ở chế độ Tự luận (Typing).
+- stars (Số nguyên - Number): Số sao đánh giá mức độ thuộc từ (giá trị nguyên từ 0 đến 3 sao).
+- lastModified (Chuỗi - String): Dấu thời gian ghi nhận ngày giao tiếp hoặc chỉnh sửa từ vựng gần nhất, định dạng chuỗi ISO YYYY-MM-DD.
+- isGraduated (Kiểu đúng/sai - Boolean): Cờ đánh dấu từ vựng đã chính thức Tốt nghiệp (hoàn thành chu kỳ học tập dài hạn).
+
+Mọi thao tác thêm mới, chỉnh sửa nghĩa, xóa từ, cập nhật điểm số ôn tập hay khôi phục dữ liệu đều kích hoạt hàm saveData() để đồng bộ toàn bộ mảng words vào localStorage dưới dạng chuỗi JSON mã hóa.
+
+--------------------------------------------------------------------------------
+4. KIẾN TRÚC GIAO DIỆN VÀ LUỒNG ĐIỀU HƯỚNG MÀN HÌNH (UI & NAVIGATION ARCHITECTURE)
+--------------------------------------------------------------------------------
+
+Giao diện ứng dụng được tổ chức thành các phân đoạn màn hình độc lập (sections) mang lớp CSS chung .app-screen. Việc điều hướng màn hình được quản lý bởi hàm trung tâm navigate(screen). Khi hàm này thực thi, tất cả các phần tử đại diện cho màn hình sẽ ẩn đi bằng thuộc tính style.display = 'none', sau đó màn hình mục tiêu screen-screen sẽ được hiển thị bằng style.display = 'block', đồng thời trang web tự động cuộn mượt về đầu trang (window.scrollTo({ top: 0, behavior: 'smooth' })).
+
+Hệ thống bao gồm 7 màn hình chức năng chính và 4 cửa sổ tương tác phụ (Modals):
+
+1. Màn hình Trang chủ (screen-home):
+Hiển thị thẻ tổng quan kho từ vựng dạng Gradient màu tím/xanh. Bảng chỉ số đo lường KPIs hiển thị 5 tham số chính: Tổng số từ, Đã học, Chưa học, Chờ tốt nghiệp, và Tốt nghiệp. Đồng thời tích hợp 2 thanh tiến độ đồ họa (ProgressBar) thể hiện Tỷ lệ phần trăm tiến độ học (progressLearned) và Tỷ lệ phần trăm tiến độ tốt nghiệp (progressGraduated). Bên dưới là các thẻ điều hướng nhanh đến Học Flashcard, Ôn tập Flashcard và Quản lý Bộ thẻ.
+
+2. Màn hình Cài đặt Học thẻ (screen-study-config):
+Cung cấp hộp chọn đa tùy chọn (<select multiple>) hiển thị danh sách các bộ thẻ còn từ chưa học. Người dùng có thể chọn một hoặc nhiều bộ thẻ đồng thời, hoặc sử dụng nút "Chọn tất cả" trước khi khởi chạy phiên học.
+
+3. Màn hình Học Flashcard thực thi (screen-study-run):
+Sử dụng kỹ thuật dựng hình 3D CSS Perspective (.flip-container, .flip-inner, .flip-front, .flip-back, transform: rotateY(180deg)) để tạo hiệu ứng lật thẻ mượt mà. Mặt trước thẻ hiển thị Chủ đề, Từ vựng, Phiên âm IPA (/.../) và Loại từ. Mặt sau thẻ hiển thị Dịch nghĩa tiếng Việt cùng một nút bấm hình cây bút ở góc trên bên phải cho phép chỉnh sửa trực tiếp nội dung dịch nghĩa thông qua hàm editCurrentStudyMeaning(event). Nút "Tiếp theo" chỉ kích hoạt (bỏ vạt mờ opacity-50) sau khi người dùng đã thực hiện lật thẻ ít nhất một lần.
+
+4. Màn hình Cài đặt Chế độ Ôn tập (screen-review-config):
+Cung cấp 5 tùy chọn chế độ ôn tập chuyên sâu bao gồm: Lật thẻ Flashcard, Trắc nghiệm (Quiz), Tự luận (Typing), Nâng cấp sao (Upgrade), và Review tốt nghiệp (Graduated).
+
+5. Màn hình Ôn tập thực thi (screen-review-run):
+Là màn hình động linh hoạt, tự động thay đổi cấu trúc bộ khung giao diện dựa trên chế độ ôn tập được chọn. Tích hợp thanh tiến độ lượt ôn, bộ đếm số thẻ, và khu vực chứa phần tử tương tác review-container.
+
+6. Màn hình Quản lý Bộ thẻ (screen-manage):
+Là trung tâm quản lý dữ liệu toàn diện. Hỗ trợ thanh tìm kiếm dữ liệu thời gian thực (search-input), menu thả xuống chọn nhiều bộ thẻ (deck-dropdown-menu), menu thả xuống chọn nhiều trạng thái (status-dropdown-menu), và bộ chọn sắp xếp dữ liệu (sort-select) theo 5 tiêu chí. Danh sách các bộ thẻ được hiển thị theo dạng thẻ xếp chồng có thể thu gọn/mở rộng (<details> & <summary>) kèm bảng chi tiết danh sách từ vựng.
+
+7. Màn hình Báo cáo Tiến độ / Kết quả (screen-study-report & screen-review-report):
+Hiển thị tổng kết chi tiết sau khi kết thúc hoặc tạm dừng phiên học/ôn tập. Báo cáo thống kê số thẻ đã hoàn thành, số thẻ dở dang, danh sách các từ chưa thuộc/bị phạt, và tổng thời gian học tập tính theo phút và giây. Nút "Về nhà" trên màn hình này được tích hợp luồng sao lưu bắt buộc.
+
+8. Các Cửa sổ tương tác Modal phụ:
+- Modal Chọn số lượng thẻ ôn tập (select-count-modal): Cho phép nhập số lượng thẻ muốn ôn tối đa theo khả năng.
+- Modal Xem chi tiết & Ghi chú thẻ (word-detail-modal): Hiển thị đầy đủ 11 thuộc tính của thẻ từ vựng, cho phép chỉnh sửa dịch nghĩa hoặc xóa từ.
+- Modal Xem trước Nhập Excel (import-modal): Bảng hiển thị tối đa 200 dòng dữ liệu xem trước, liệt kê lỗi dòng không hợp lệ và cho phép chọn chính sách xử lý từ trùng (Bỏ qua hoặc Thay thế).
+- Modal Nhắc nhở Sao lưu Bắt buộc (backup-reminder-modal): Pop-up xuất hiện khi người dùng nhấn "Về nhà" từ màn hình báo cáo, chỉ cung cấp duy nhất 1 lựa chọn "Sao lưu ngay" để bảo đảm dữ liệu luôn được xuất file Excel trước khi thoát.
+
+--------------------------------------------------------------------------------
+5. THUẬT TOÁN VÀ LOGIC VẬN HÀNH CHUYÊN SÂU (ADVANCED ALGORITHMS & CORE LOGIC)
+--------------------------------------------------------------------------------
+
+a) Thuật toán Lật thẻ và Chỉnh sửa Nghĩa Tức thì (Flashcard Flip & Inline Edit):
+Khi nhấn vào thẻ học, class 'is-flipped' được thêm/bớt vào phần tử container để kích hoạt hiệu ứng xoay 180 độ. Nút chỉnh sửa dịch nghĩa nằm ở góc mặt sau thẻ gọi hàm editCurrentStudyMeaning(event). Hàm sử dụng event.stopPropagation() để chặn sự kiện nổi bọt (Bubbling), ngăn không cho thẻ bị lật ngược lại mặt trước. Sau khi người dùng xác nhận nghĩa mới qua hộp thoại prompt, hàm sẽ cập nhật đồng bộ vào mảng học hiện tại, mảng dữ liệu gốc words, cập nhật trường lastModified thành ngày hiện tại, thực thi saveData() và đổi văn bản hiển thị trên thẻ ngay lập tức.
+
+b) Thuật toán Phân loại Trạng thái và Tiêu chuẩn Tốt nghiệp (Graduation Logic):
+Một từ vựng được xác định là nằm trong danh sách "Chờ tốt nghiệp" (isWaitingGraduation) khi thỏa mãn đồng thời 5 điều kiện khắt khe:
+1. Đã trải qua phiên học ban đầu (learned === true).
+2. Chưa được đánh dấu tốt nghiệp hoàn toàn (isGraduated === false).
+3. Tổng số lần ôn tập thành công (reviewCountQuiz + reviewCountTyping) đạt từ 50 lần trở lên.
+4. Số lần ôn trắc nghiệm thành công (reviewCountQuiz) đạt tối thiểu 20 lần.
+5. Số lần ôn tự luận thành công (reviewCountTyping) đạt tối thiểu 20 lần.
+
+Thời gian chờ tốt nghiệp (getWaitingDays) được tính toán bằng khoảng cách giữa mốc 00:00:00 giờ địa phương của ngày hiện tại và ngày giao tiếp gần nhất (lastModified). Từ vựng chỉ chính thức "Tốt nghiệp" (isGraduated = true) khi trải qua chế độ "Nâng cấp sao" và tích lũy đủ 3 sao (stars = 3).
+
+c) Thuật toán Chế độ Ôn tập và Xử lý Lượt Phạt (Review Modes & Retry Queue):
+- Trắc nghiệm (Quiz): Hàm uniqueQuizOptions(word) tạo ra 4 lựa chọn ngẫu nhiên gồm 1 đáp án đúng và 3 đáp án nhiễu lấy từ các từ vựng khác trong kho. Nếu người dùng chọn đúng, chỉ số reviewCountQuiz tăng 1. Nếu chọn sai, reviewCountQuiz bị trừ 1 và thẻ đó tự động đẩy vào mảng hàng chờ phạt (retryQueue).
+- Tự luận (Typing): Tự động tạo mảng các ô nhập liệu đơn ký tự (.char-input) tương ứng với độ dài từ tiếng Anh. Sử dụng các sự kiện keydown và input để tự động chuyển con trỏ (focus) sang ô tiếp theo khi gõ chữ hoặc lùi con trỏ khi nhấn Backspace. Chuỗi nhập vào được chuẩn hóa (loại bỏ hoa/thường, loại bỏ ký tự đặc biệt) để so sánh với từ gốc. Nếu gõ sai, reviewCountTyping bị trừ 1 và từ đó bị đẩy vào retryQueue.
+- Nâng cấp sao (Upgrade): Hệ thống ngẫu nhiên gán hình thức thi (Quiz hoặc Typing) cho từng thẻ từ trong mảng upgradeTestModes. Nếu trả lời đúng, số sao tăng 1 (stars = min(3, stars + 1)), nếu đạt 3 sao sẽ gán isGraduated = true. Nếu trả lời sai, số sao bị giảm 1 (stars = max(0, stars - 1)) và thẻ bị đẩy vào retryQueue.
+- Vòng lặp phạt (Retry Phase - isRetryPhase): Khi lượt ôn chính hoàn tất, nếu retryQueue có chứa thẻ bị làm sai, hệ thống sẽ chuyển sang cờ isRetryPhase = true và cho người dùng ôn lại các thẻ trong retryQueue. Trong giai đoạn phạt này, việc trả lời đúng hay sai chỉ phục vụ mục đích học thuộc chứ KHÔNG tiếp tục cộng/trừ điểm số reviewCount hay stars.
+
+d) Thuật toán Tìm kiếm, Lọc đa tiêu chí và Sắp xếp (Search, Filter & Sort Engine):
+Hàm getFilteredWords() thực hiện xử lý dữ liệu qua 2 công đoạn:
+- Lọc chuỗi (Normalize Search): Chuyển đổi từ vựng, dịch nghĩa, chủ đề, loại từ về dạng chữ thường không dấu (sử dụng Unicode NFD regex [̀-ͯ]) để đối soát với từ khóa tìm kiếm.
+- Lọc đa bộ thẻ & Lọc đa trạng thái: Kiểm tra sự tồn tại của từ vựng trong mảng selectedDecks và selectedStatuses.
+- Sắp xếp (Sorting): Hỗ trợ 5 chế độ sắp xếp bao gồm Mặc định (A-Z theo Chủ đề rồi đến Từ vựng), Ôn thấp trước (review_asc), Ôn cao trước (review_desc), Ưu tiên Chờ tốt nghiệp trước (grad_first) và Ưu tiên Chờ tốt nghiệp sau (grad_last).
+
+--------------------------------------------------------------------------------
+6. QUY TRÌNH XỬ LÝ TỆP TIN EXCEL VÀ AN TOÀN DỮ LIỆU (EXCEL PROCESSING & DATA BACKUP)
+--------------------------------------------------------------------------------
+
+a) Tải File Mẫu (downloadExcelTemplate):
+Tạo mảng dữ liệu mẫu chứa các thuộc tính chude, tuvung, loaitu, phienam, dichnghia. Sử dụng XLSX.utils.json_to_sheet và XLSX.writeFile để xuất tệp flashcard_template.xlsx chuẩn cho người dùng điền dữ liệu.
+
+b) Nhập Dữ Liệu Lần Đầu (handleExcelImport & confirmImport):
+Sử dụng FileReader đọc tệp nhị phân dưới dạng ArrayBuffer. Chuyển đổi Sheet đầu tiên thành mảng JSON. Kiểm tra tính hợp lệ từng dòng (bỏ qua dòng trống, phát hiện dòng thiếu trường bắt buộc). Kiểm tra từ trùng lặp ngay trong tệp Excel dựa trên khóa tổng hợp (chude + tuvung + loaitu). Hiển thị Modal xem trước tối đa 200 dòng và hỗ trợ 2 chính sách xử lý từ trùng với dữ liệu cũ trên thiết bị: "Bỏ qua" (skip) hoặc "Thay thế" (replace).
+
+c) Sao Lưu Dữ Liệu (backupData):
+Chuyển đổi toàn bộ mảng words hiện tại thành mảng JSON chứa đầy đủ 11 thuộc tính dữ liệu (bao gồm cả mã id, số lượt ôn, số sao, ngày cập nhật, trạng thái tốt nghiệp, và cột phienam nằm giữa loaitu và dichnghia). Đóng gói và xuất thành tệp English_Vocabulary_Backup.xlsx.
+
+d) Khôi Phục Dữ Liệu Ghi Đè 100% (restoreData):
+Đọc tệp Excel sao lưu dưới dạng ArrayBuffer. Phân tích và ép kiểu chuẩn xác cho từng thuộc tính (chuyển đổi cờ boolean, ép kiểu số nguyên cho stars và reviewCount). Hiển thị hộp thoại cảnh báo thống kê chi tiết (Tổng số từ, Đã học, Chờ tốt nghiệp, Tốt nghiệp) và yêu cầu người dùng xác nhận trước khi thực hiện ghi đè toàn bộ (words = cleaned) lên bộ nhớ localStorage của thiết bị.
+
+--------------------------------------------------------------------------------
+7. QUẢN LÝ PHIÊN HỌC VÀ RÀO CHẮN AN TOÀN SAO LƯU (SESSION TIMER & BACKUP GUARD)
+--------------------------------------------------------------------------------
+
+a) Bộ đếm Thời gian Phiên học (Session Timer Engine):
+Hệ thống tích hợp bộ đếm thời gian thời gian thực thông qua các hàm startSessionTimer(), pauseSessionTimer(), resumeSessionTimer() và stopSessionTimer(). Biến sessionElapsedSeconds ghi nhận chính xác số giây đã trôi qua trong phiên học/ôn tập và được định dạng hiển thị thành chuỗi "XX phút YY giây" trên các báo cáo tổng kết.
+
+b) Rào chắn Nhắc nhở Sao lưu Bắt buộc (Mandatory Backup Reminder Guard):
+Khi người dùng kết thúc hoặc tạm dừng một phiên học/ôn tập, ứng dụng sẽ chuyển hướng đến màn hình Báo cáo Tiến độ (screen-study-report hoặc screen-review-report). Nút "Về nhà" trên các màn hình này không thực thi chuyển hướng ngay lập tức mà gọi hàm handleGoHomeFromReport(). Hàm này kích hoạt Modal nhắc nhở sao lưu (backup-reminder-modal). Modal này được thiết kế với tính chất rào chắn an toàn tuyệt đối: CHỈ CÓ DUY NHẤT 1 NÚT BẤM "Sao lưu ngay" (executeBackupAndGoHome). Khi người dùng nhấn nút, ứng dụng sẽ tự động xuất tệp sao lưu Excel về máy, ẩn Modal, dừng bộ đếm thời gian và chuyển người dùng về Trang chủ an toàn, đảm bảo mọi tiến trình học tập vừa thực hiện không bao giờ bị mất mát.
+
+================================================================================
+KẾT THÚC TÀI LIỆU YÊU CẦU KỸ THUẬT VÀ KIẾN TRÚC PHẦN MỀM
+================================================================================
