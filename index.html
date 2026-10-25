@@ -1447,13 +1447,23 @@
                     inputs[index + 1].focus();
                     return;
                 }
+        
+                // BỔ SUNG PHÍM ENTER ĐỂ KIỂM TRA / CHUYỂN TỪ
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    if (!reviewLocked) {
+                        checkTyping();
+                    } else {
+                        completeReview(true);
+                    }
+                    return;
+                }
             }
         
             if (event.type === 'input') {
-                // Cho phép ký tự a-z, dấu cách và dấu gạch nối
                 let value = input.value.toLowerCase().replace(/[^a-z -]/g, '').slice(-1);
                 input.value = value;
-            
+        
                 if (value && index < total - 1) {
                     inputs[index + 1].focus();
                 }
@@ -2654,6 +2664,126 @@
             }
         }
 
+        // ==================== BỔ SUNG LẮNG NGHE BÀN PHÍM NGOÀI ====================
+        document.addEventListener('keydown', function(e) {
+            // Nếu người dùng đang gõ vào ô input, textarea (trừ các ô nhập tự luận .char-input) thì bỏ qua
+            const activeEl = document.activeElement;
+            const isTypingInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA') && !activeEl.classList.contains('char-input');
+            if (isTypingInput) return;
+        
+            // 1. XỬ LÝ PHÍM ESCAPE (Tắt các Modal/Pop-up)
+            if (e.key === 'Escape') {
+                closeSelectCountModal();
+                closeWordDetailModal();
+                closeImportModal();
+                return;
+            }
+        
+            // 2. XỬ LÝ ENTER CHO POP-UP NHẮC SAO LƯU BẮT BUỘC
+            const backupModal = document.getElementById('backup-reminder-modal');
+            if (backupModal && !backupModal.classList.contains('hidden')) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    executeBackupAndGoHome();
+                }
+                return;
+            }
+        
+            // 3. XỬ LÝ ENTER CHO MODAL CHỌN SỐ LƯỢNG THẺ
+            const selectCountModal = document.getElementById('select-count-modal');
+            if (selectCountModal && !selectCountModal.classList.contains('hidden')) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmSelectCount();
+                }
+                return;
+            }
+        
+            // 4. XỬ LÝ ENTER CHO MODAL XÁC NHẬN NHẬP EXCEL
+            const importModal = document.getElementById('import-modal');
+            if (importModal && !importModal.classList.contains('hidden')) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmImport();
+                }
+                return;
+            }
+        
+            // 5. XỬ LÝ ĐIỀU KHIỂN Ở MÀN HÌNH HỌC FLASHCARD (screen-study-run)
+            const studyRun = document.getElementById('screen-study-run');
+            if (studyRun && !studyRun.classList.contains('hidden')) {
+                // Space / ArrowUp / ArrowDown: Lật thẻ
+                if (e.code === 'Space' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    flipStudyCard();
+                    return;
+                }
+                // ArrowRight / Enter: Chuyển thẻ tiếp theo (khi thẻ đã lật)
+                if (e.key === 'ArrowRight' || e.key === 'Enter') {
+                    e.preventDefault();
+                    const nextBtn = document.getElementById('study-next-btn');
+                    if (nextBtn && !nextBtn.disabled) {
+                        nextStudyCard();
+                    } else {
+                        // Nếu chưa lật thẻ mà bấm Enter / ArrowRight thì tự động lật thẻ
+                        flipStudyCard();
+                    }
+                    return;
+                }
+            }
+        
+            // 6. XỬ LÝ ĐIỀU KHIỂN Ở MÀN HÌNH ÔN TẬP / REVIEW (screen-review-run)
+            const reviewRun = document.getElementById('screen-review-run');
+            if (reviewRun && !reviewRun.classList.contains('hidden')) {
+                // A. CHẾ ĐỘ FLASHCARD
+                if (reviewMode === 'flashcard') {
+                    if (e.code === 'Space' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        toggleCard('review-card');
+                        return;
+                    }
+                    if (e.key === 'ArrowRight' || e.key === 'Enter') {
+                        e.preventDefault();
+                        completeReview(true);
+                        return;
+                    }
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        reviewPrevious();
+                        return;
+                    }
+                }
+        
+                // B. CHẾ ĐỘ TRẮC NGHIỆM (QUIZ)
+                if (reviewMode === 'quiz' || reviewMode === 'upgrade' || reviewMode === 'graduated') {
+                    const quizOptions = document.querySelectorAll('.quiz-option');
+                    if (quizOptions.length > 0) {
+                        // Chọn nhanh đáp án bằng phím 1, 2, 3, 4 hoặc a, b, c, d
+                        let optionIndex = -1;
+                        if (['1', 'a', 'A'].includes(e.key)) optionIndex = 0;
+                        if (['2', 'b', 'B'].includes(e.key)) optionIndex = 1;
+                        if (['3', 'c', 'C'].includes(e.key)) optionIndex = 2;
+                        if (['4', 'd', 'D'].includes(e.key)) optionIndex = 3;
+        
+                        if (optionIndex >= 0 && quizOptions[optionIndex] && !reviewLocked) {
+                            e.preventDefault();
+                            answerQuiz(quizOptions[optionIndex]);
+                            return;
+                        }
+        
+                        // Khi đã chọn xong đáp án, bấm Enter hoặc ArrowRight để sang câu tiếp
+                        if ((e.key === 'Enter' || e.key === 'ArrowRight') && reviewLocked) {
+                            e.preventDefault();
+                            // Nút tiếp theo trong quiz được kích hoạt tự động qua setTimeout, 
+                            // nhưng nếu bấm Enter sẽ chuyển ngay
+                            return;
+                        }
+                    }
+                }
+            }
+        });
+
+        
         // ========== XỬ LÝ VỀ NHÀ KÈM SAO LƯU BẮT BUỘC ==========
         function handleGoHomeFromReport() {
             // Bật Pop-up nhắc nhở sao lưu
