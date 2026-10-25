@@ -2051,7 +2051,7 @@
         
             summary.innerHTML = `
                 Có <strong>${importRows.length}</strong> dòng hợp lệ để nhập.
-                ${importErrors.length ? `Có <strong>\${importErrors.length}</strong> dòng bị loại bỏ.` : ''}
+                ${importErrors.length ? `Có <strong>${importErrors.length}</strong> dòng bị loại bỏ.` : ''}
             `;
         
             body.innerHTML = importRows.slice(0, 200).map(row => `
@@ -2080,7 +2080,7 @@
                 errors.innerHTML = `
                     <strong>Các dòng không hợp lệ:</strong>
                     <ul class="list-disc ml-5 mt-2">
-                        ${importErrors.slice(0, 30).map(error => `<li>\${escapeHTML(error)}</li>`).join('')}
+                        ${importErrors.slice(0, 30).map(error => `<li>${escapeHTML(error)}</li>`).join('')}
                     </ul>
                     ${importErrors.length > 30 ? '<p class="mt-2">Chỉ hiển thị 30 lỗi đầu tiên.</p>' : ''}
                 `;
